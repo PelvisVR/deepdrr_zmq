@@ -22,15 +22,15 @@ struct CameraProjection {
 }
 
 struct NiftiLoaderParams {
-    path @0 :String;
+    path @0 :Text;
     worldFromAnatomical @1 :Matrix4x4;
     useThresholding @2 :Bool;
     useCached @3 :Bool;
     saveCache @4 :Bool;
-    cacheDir @5 :String;
-#   materials @6 :List(String);
+    cacheDir @5 :Text;
+#   materials @6 :List(Text);
     segmentation @7 :Bool;
-#    densityKwargs @8 :List(String);
+#    densityKwargs @8 :List(Text);
 }
 
 struct VolumeLoaderParams {
@@ -40,11 +40,11 @@ struct VolumeLoaderParams {
 }
 
 struct ProjectorParams {
-    projectorId @0 :String;
+    projectorId @0 :Text;
     volumes @1 :List(VolumeLoaderParams);
     step @2 :Float32;
-    mode @3 :String;
-    spectrum @4 :String;
+    mode @3 :Text;
+    spectrum @4 :Text;
     addScatter @5 :Bool;
     scatterNum @6 :UInt32;
     addNoise @7 :Bool;
@@ -60,19 +60,19 @@ struct ProjectorParams {
 struct StatusResponse {
 #    success @0 :Bool;
     code @1 :UInt16;
-    message @2 :String;
+    message @2 :Text;
 }
 
 struct ProjectRequest {
-    requestId @0 :String;
-    projectorId @1 :String;
+    requestId @0 :Text;
+    projectorId @1 :Text;
     cameraProjections @2 :List(CameraProjection);
     volumesWorldFromAnatomical @3 :List(Matrix4x4);
 }
 
 struct ProjectResponse {
-    requestId @0 :String;
-    projectorId @1 :String;
+    requestId @0 :Text;
+    projectorId @1 :Text;
     status @2 :StatusResponse;
     images @3 :List(Image);
 }
