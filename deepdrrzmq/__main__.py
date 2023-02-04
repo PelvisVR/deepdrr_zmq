@@ -13,6 +13,8 @@ from PIL import Image
 from deepdrr import geo
 from deepdrr.projector import Projector
 
+from deepdrrzmq.zmqutil import zmq_no_linger_context
+
 app = typer.Typer()
 
 file_path = os.path.dirname(os.path.realpath(__file__))
@@ -125,6 +127,8 @@ class DeepDRRServer:
         pub_socket.bind(f"tcp://*:{self.pub_port}")
         sub_socket.bind(f"tcp://*:{self.sub_port}")
 
+        sub_socket.setsockopt(zmq.SUBSCRIBE, b"")
+
         while True:
             try:
                 topic, data = await sub_socket.recv_multipart()
@@ -192,14 +196,6 @@ class DeepDRRServer:
             self.projector.__exit__(exc_type, exc_value, traceback)
 
 
-@contextmanager
-def zmq_no_linger_context():
-    context = zmq.asyncio.Context()
-    try:
-        yield context
-    finally:
-        print("destroying zmq context")
-        context.destroy(linger=0)
 
 
 @app.command()
@@ -216,7 +212,7 @@ def main(
     print(f"pub_port: {pub_port}")
     print(f"sub_port: {sub_port}")
 
-    with zmq_no_linger_context() as context:
+    with zmq_no_linger_context(zmq.asyncio.Context()) as context:
         with DeepDRRServer(context, rep_port, pub_port, sub_port) as deepdrr_server:
             asyncio.run(deepdrr_server.start())
 
