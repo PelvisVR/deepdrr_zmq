@@ -67,6 +67,7 @@ struct ProjectRequest {
     request_id @0 :String;
     projector_id @1 :String;
     camera_projections @2 :List(CameraProjection);
+    volumes_world_from_anatomical @3 :List(Matrix4x4);
 }
 
 struct ProjectResponse {

@@ -16,19 +16,32 @@ def main():
         data_dir / "dataset6_CLINIC_0001_data.nii.gz", use_thresholding=True
     )
     patient.faceup()
+    patient1 = deepdrr.Volume.from_nifti(
+        data_dir / "dataset6_CLINIC_0001_data.nii.gz", use_thresholding=True
+    )
+    patient1.faceup()
 
     # define the simulated C-arm
     carm = deepdrr.MobileCArm(patient.center_in_world + geo.v(0, 0, -300))
 
     # project in the AP view
-    with Projector(patient, carm=carm) as projector:
+    with Projector([patient, patient1], carm=carm) as projector:
         carm.move_to(alpha=0, beta=0)
-        image = projector()
-        # Image.fromarray((image * 255).astype(np.uint8))
 
-    path = output_dir / "example_projector.png"
-    image_utils.save(path, image)
-    print(f"saved example projection image to {path.absolute()}")
+        # Image.fromarray((image * 255).astype(np.uint8))
+        for i in range(5):
+            image = projector()
+            path = output_dir / f"example_projector_static_{i}.png"
+            image_utils.save(path, image)
+            print(f"saved example projection image to {path.absolute()}")
+
+        for i in range(5):
+            image = projector()
+            path = output_dir / f"example_projector{i}.png"
+            image_utils.save(path, image)
+            print(f"saved example projection image to {path.absolute()}")
+            patient.translate(geo.v(0, 100, 0))
+            patient1.translate(geo.v(0, -100, 0))
 
 
 if __name__ == "__main__":
