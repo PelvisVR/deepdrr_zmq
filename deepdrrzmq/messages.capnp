@@ -58,7 +58,7 @@ struct ProjectorParams {
 }
 
 struct StatusResponse {
-    success @0 :Bool;
+#    success @0 :Bool;
     code @1 :UInt16;
     message @2 :String;
 }
@@ -75,4 +75,10 @@ struct ProjectResponse {
     projector_id @1 :String;
     status @2 :StatusResponse;
     images @3 :List(Image);
+}
+
+struct ServerCommand {
+    union {
+        create_projector @0 :ProjectorParams;
+    }
 }
