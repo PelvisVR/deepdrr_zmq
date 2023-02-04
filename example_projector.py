@@ -5,6 +5,8 @@ import deepdrr
 from deepdrr import geo
 from deepdrr.utils import test_utils, image_utils
 from deepdrr.projector import Projector
+from PIL import Image
+import numpy as np
 
 
 def main():
@@ -22,6 +24,7 @@ def main():
     with Projector(patient, carm=carm) as projector:
         carm.move_to(alpha=0, beta=0)
         image = projector()
+        # Image.fromarray((image * 255).astype(np.uint8))
 
     path = output_dir / "example_projector.png"
     image_utils.save(path, image)

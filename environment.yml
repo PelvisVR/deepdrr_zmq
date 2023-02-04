@@ -14,4 +14,7 @@ dependencies:
   - pip:
       # - -r requirements.txt
       - deepdrr
+      - pyzmq
+      - pycapnp
+      - typer
       # - -e .
