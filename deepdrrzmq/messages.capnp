@@ -28,39 +28,51 @@ struct NiftiLoaderParams {
     useCached @3 :Bool;
     saveCache @4 :Bool;
     cacheDir @5 :Text;
-#   materials @6 :List(Text);
-    segmentation @7 :Bool;
-#    densityKwargs @8 :List(Text);
+#   materials @? :List(Text);
+    segmentation @6 :Bool;
+#    densityKwargs @? :List(Text);
+}
+
+struct DicomLoaderParams { # todo
+    path @0 :Text;
+    worldFromAnatomical @1 :Matrix4x4;
+    useThresholding @2 :Bool;
+    useCached @3 :Bool;
+    saveCache @4 :Bool;
+    cacheDir @5 :Text;
+#   materials @? :List(Text);
+    segmentation @6 :Bool;
+#    densityKwargs @? :List(Text);
 }
 
 struct VolumeLoaderParams {
     union {
         nifti @0 :NiftiLoaderParams;
+        dicom @1 :DicomLoaderParams;
     }
 }
 
 struct ProjectorParams {
-    projectorId @0 :Text;
-    volumes @1 :List(VolumeLoaderParams);
-    step @2 :Float32;
-    mode @3 :Text;
-    spectrum @4 :Text;
-    addScatter @5 :Bool;
-    scatterNum @6 :UInt32;
-    addNoise @7 :Bool;
-    photonCount @8 :UInt32;
-    threads @9 :UInt32;
-    maxBlockIndex @10 :UInt32;
-    collectedEnergy @11 :Bool;
-    neglog @12 :Bool;
-    intensityUpperBound @13 :Float32;
-    attenuateOutsideVolume @14 :Bool;
+    volumes @0 :List(VolumeLoaderParams);
+    step @1 :Float32;
+    mode @2 :Text;
+    spectrum @3 :Text;
+    addScatter @4 :Bool;
+    scatterNum @5 :UInt32;
+    addNoise @6 :Bool;
+    photonCount @7 :UInt32;
+    threads @8 :UInt32;
+    maxBlockIndex @9 :UInt32;
+    collectedEnergy @10 :Bool;
+    neglog @11 :Bool;
+    intensityUpperBound @12 :Float32;
+    attenuateOutsideVolume @13 :Bool;
 }
 
 struct StatusResponse {
 #    success @0 :Bool;
-    code @1 :UInt16;
-    message @2 :Text;
+    code @0 :UInt16;
+    message @1 :Text;
 }
 
 struct ProjectRequest {
@@ -77,8 +89,18 @@ struct ProjectResponse {
     images @3 :List(Image);
 }
 
+struct CreateProjectorRequest {
+    projectorId @0 :Text;
+    projectorParams @1 :ProjectorParams;
+}
+
+struct DeleteProjectorRequest {
+    projectorId @0 :Text;
+}
+
 struct ServerCommand {
     union {
-        createProjector @0 :ProjectorParams;
+        createProjector @0 :CreateProjectorRequest;
+        deleteProjector @1 :DeleteProjectorRequest;
     }
 }

@@ -4,10 +4,12 @@ from deepdrr.utils import test_utils, image_utils
 from deepdrr.projector import Projector
 from PIL import Image
 import numpy as np
+from contextlib import contextmanager
 
 import json
 import math
 import os
+import asyncio
 import random
 import sys
 import time
@@ -53,63 +55,64 @@ class DeepDRRServer:
         self.volumes = [] # type: List[deepdrr.Volume]
 
     async def start(self):
-        control_server(context, rep_port)
-        project_server(context, pub_port, sub_port)
+        control = self.control_server()
+        project = self.project_server()
+        await asyncio.gather(control, project)
         
     async def control_server(self):
-        rep_socket = context.socket(zmq.REP)
+        rep_socket = self.context.socket(zmq.REP)
         rep_socket.hwm = 2
 
-        rep_socket.bind(f"tcp://*:{rep_port}")
+        rep_socket.bind(f"tcp://*:{self.rep_port}")
 
         while True:
             try:
                 msg = await rep_socket.recv_multipart()
                 print(f"received: {msg}")
                 with messages.ServerCommand.from_bytes(msg[0]) as command:
-                    if command.which() == "create_projector":
-                        projector_params = command.create_projector
+                    if command.which() == "createProjector":
+                        projectorParams = command.createProjector.projectorParams
 
                         self.volumes = []
-                        for volume_params in projector_params.volumes:
-                            if volume_params.which() == "nifti":
-                                nifti_params = volume_params.nifti
+                        for volumeParams in projectorParams.volumes:
+                            if volumeParams.which() == "nifti":
+                                nifti_params = volumeParams.nifti
                                 self.volumes.append(
                                     deepdrr.Volume.from_nifti(
                                         path=nifti_params.path,
-                                        world_from_anatomical=nifti_params.world_from_anatomical,
-                                        use_thresholding=nifti_params.use_thresholding,
-                                        use_cached=nifti_params.use_cached,
-                                        save_cache=nifti_params.save_cache,
-                                        cache_dir=nifti_params.cache_dir,
+                                        world_from_anatomical=niftiParams.worldFromAnatomical,
+                                        use_thresholding=niftiParams.useThresholding,
+                                        use_cached=niftiParams.useCached,
+                                        save_cache=niftiParams.saveCache,
+                                        cache_dir=niftiParams.cacheDir,
                                         # materials=None,
-                                        segmentation=nifti_params.segmentation,
+                                        segmentation=niftiParams.segmentation,
                                         # density_kwargs=None,
                                     )
                                 )
                             else:
-                                raise DeepDRRServerException(f"unknown volume type: {volume_params.which()}")
+                                raise DeepDRRServerException(f"unknown volume type: {volumeParams.which()}")
 
                         self.projector = Projector(
                             volume=self.volumes,
-                            step=projector_params.step,
-                            mode=projector_params.mode,
-                            spectrum=projector_params.spectrum,
-                            add_scatter=projector_params.add_scatter,
-                            scatter_num=projector_params.scatter_num,
-                            add_noise=projector_params.add_noise,
-                            photon_count=projector_params.photon_count,
-                            threads=projector_params.threads,
-                            max_block_index=projector_params.max_block_index,
-                            collected_energy=projector_params.collected_energy,
-                            neglog=projector_params.neglog,
-                            intensity_upper_bound=projector_params.intensity_upper_bound,
-                            attenuate_outside_volume=projector_params.attenuate_outside_volume,
+                            step=projectorParams.step,
+                            mode=projectorParams.mode,
+                            spectrum=projectorParams.spectrum,
+                            add_scatter=projectorParams.addScatter,
+                            scatter_num=projectorParams.scatterNum,
+                            add_noise=projectorParams.addNoise,
+                            photon_count=projectorParams.photonCount,
+                            threads=projectorParams.threads,
+                            max_block_index=projectorParams.maxBlockIndex,
+                            collected_energy=projectorParams.collectedEnergy,
+                            neglog=projectorParams.neglog,
+                            intensity_upper_bound=projectorParams.intensityUpperBound,
+                            attenuate_outside_volume=projectorParams.attenuateOutsideVolume,
                         )
                         self.projector.__enter__()
-                        self.projector_id = projector_params.projector_id
+                        self.projector_id = command.createProjector.projectorId
 
-                        print(f"created projector: {projector_params}")
+                        print(f"created projector: {projectorParams}")
                         await rep_socket.send_multipart([make_response(0, "ok").to_bytes()])
                     else:
                         raise DeepDRRServerException(f"unknown command: {command.which()}")
@@ -136,11 +139,11 @@ class DeepDRRServer:
                         if self.projector is None:
                             raise DeepDRRServerException(1, "projector is not created")
                         
-                        if request.projector_id != self.projector_id:
+                        if request.projectorId != self.projectorId:
                             raise DeepDRRServerException(2, "projector id mismatch")
 
                         camera_projections = []
-                        for camera_projection_struct in request.camera_projections:
+                        for camera_projection_struct in request.cameraProjections:
                             camera_projections.append(
                                 geo.CameraProjection(
                                     intrinsic=np.array(camera_projection_struct.intrinsic.data).reshape(3, 3),
@@ -149,7 +152,7 @@ class DeepDRRServer:
                             )
 
                         volumes_world_from_anatomical = []
-                        for transform in request.volumes_world_from_anatomical:
+                        for transform in request.volumesWorldFromAnatomical:
                             volumes_world_from_anatomical.append(
                                 np.array(transform.data).reshape(4, 4)
                             )
@@ -163,12 +166,12 @@ class DeepDRRServer:
                             raise DeepDRRServerException(3, "volumes_world_from_anatomical length mismatch")
                         
                         raw_images = self.projector.project(
-                            camera_projections=camera_projections,
+                            camera_projections=cameraProjections,
                         )
 
                         response = messages.ProjectResponse.new_message()
-                        response.request_id = request.request_id
-                        response.projector_id = request.projector_id
+                        response.requestId = request.requestId
+                        response.projectorId = request.projectorId
                         response.status = make_response(0, "ok")
 
                         response.images = []
