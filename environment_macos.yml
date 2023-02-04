@@ -7,11 +7,11 @@ dependencies:
   - python=3.8
   - pytorch
   - torchvision
-  - pytorch-cuda=11.7
-  - pycuda
+  # - pytorch-cuda=11.7
+  # - pycuda
   - pip
   - pip:
-      - deepdrr
+      # - deepdrr
       - pyzmq
       - pycapnp
       - typer
