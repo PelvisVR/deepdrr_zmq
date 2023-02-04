@@ -7,10 +7,11 @@ dependencies:
   - python=3.8
   - pytorch
   - torchvision
-  - cudatoolkit=11.1
+  - pytorch-cuda=11.7
+  # - cudatoolkit=11.1
   - pycuda
   - pip
   - pip:
-      - -r requirements.txt
+      # - -r requirements.txt
       - deepdrr
       # - -e .
