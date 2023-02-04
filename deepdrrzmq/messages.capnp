@@ -1,5 +1,19 @@
 @0xeaa72c8788903898;
 
+struct OptionalFloat32 {
+    union {
+        value @0 :Float32;
+        none @1 :Void;
+    }
+}
+
+struct OptionalText {
+    union {
+        value @0 :Text;
+        none @1 :Void;
+    }
+}
+
 struct Time {
   millis @0 :UInt64;
 }
@@ -24,24 +38,24 @@ struct CameraProjection {
 struct NiftiLoaderParams {
     path @0 :Text;
     worldFromAnatomical @1 :Matrix4x4;
-    useThresholding @2 :Bool;
-    useCached @3 :Bool;
-    saveCache @4 :Bool;
-    cacheDir @5 :Text;
+    useThresholding @2 :Bool = true;
+    useCached @3 :Bool = true;
+    saveCache @4 :Bool = false;
+    cacheDir @5 :OptionalText = (none = void);
 #   materials @? :List(Text);
-    segmentation @6 :Bool;
+    segmentation @6 :Bool = false;
 #    densityKwargs @? :List(Text);
 }
 
 struct DicomLoaderParams { # todo
     path @0 :Text;
     worldFromAnatomical @1 :Matrix4x4;
-    useThresholding @2 :Bool;
-    useCached @3 :Bool;
-    saveCache @4 :Bool;
-    cacheDir @5 :Text;
+    useThresholding @2 :Bool = true;
+    useCached @3 :Bool = true;
+    saveCache @4 :Bool = false;
+    cacheDir @5 :OptionalText = (none = void);
 #   materials @? :List(Text);
-    segmentation @6 :Bool;
+    segmentation @6 :Bool = false;
 #    densityKwargs @? :List(Text);
 }
 
@@ -54,19 +68,19 @@ struct VolumeLoaderParams {
 
 struct ProjectorParams {
     volumes @0 :List(VolumeLoaderParams);
-    step @1 :Float32;
-    mode @2 :Text;
-    spectrum @3 :Text;
-    addScatter @4 :Bool;
-    scatterNum @5 :UInt32;
-    addNoise @6 :Bool;
-    photonCount @7 :UInt32;
-    threads @8 :UInt32;
-    maxBlockIndex @9 :UInt32;
-    collectedEnergy @10 :Bool;
-    neglog @11 :Bool;
-    intensityUpperBound @12 :Float32;
-    attenuateOutsideVolume @13 :Bool;
+    priorities @1 :List(UInt32);
+    step @2 :Float32 = 0.1;
+    mode @3 :Text = "linear";
+    spectrum @4 :Text = "90KV_AL40";
+    scatterNum @5 :UInt32 = 0;
+    addNoise @6 :Bool = false;
+    photonCount @7 :UInt32 = 10000;
+    threads @8 :UInt32 = 8;
+    maxBlockIndex @9 :UInt32 = 1024;
+    collectedEnergy @10 :Bool = false;
+    neglog @11 :Bool = true;
+    intensityUpperBound @12 :OptionalFloat32 = (none = void);
+    attenuateOutsideVolume @13 :Bool = false;
 }
 
 struct StatusResponse {
