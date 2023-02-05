@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from deepddr import geo
-
+from deepdrr import geo
+from deepdrr.device import Device
 
 class SimpleDevice(Device):
     sensor_height: int

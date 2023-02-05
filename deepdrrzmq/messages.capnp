@@ -7,6 +7,13 @@ struct Optional(Value) {
     }
 }
 
+struct OptionalFloat32 {
+    union {
+        value @0 :Float32;
+        none @1 :Void;
+    }
+}
+
 struct Time {
   millis @0 :UInt64;
 }
@@ -27,7 +34,7 @@ struct CameraIntrinsics {
     sensorHeight @0 :UInt32 = 1536;
     sensorWidth @1 :UInt32 = 1536;
     pixelSize @2 :Float32 = 0.194;
-    sourceToDetectorDistance @2 :Float32 = 1020;
+    sourceToDetectorDistance @3 :Float32 = 1020;
 }
 
 struct CameraProjection {
@@ -84,7 +91,7 @@ struct ProjectorParams {
     maxBlockIndex @10 :UInt32 = 1024;
     collectedEnergy @11 :Bool = false;
     neglog @12 :Bool = true;
-    intensityUpperBound @13 :Optional(Float32) = (none = void);
+    intensityUpperBound @13 :OptionalFloat32 = (none = void);
     attenuateOutsideVolume @14 :Bool = false;
 }
 
