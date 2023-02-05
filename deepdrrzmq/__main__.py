@@ -101,11 +101,6 @@ class DeepDRRServer:
                         for volumeParams in projectorParams.volumes:
                             if volumeParams.which() == "nifti":
                                 niftiParams = volumeParams.nifti
-                                # output_dir = test_utils.get_output_dir()
-                                # data_dir = test_utils.download_sampledata("CTPelvic1K_sample")
-                                # niftiVolume = deepdrr.Volume.from_nifti(
-                                #     data_dir / "dataset6_CLINIC_0001_data.nii.gz", use_thresholding=True
-                                # )
                                 niftiVolume = deepdrr.Volume.from_nifti(
                                     path=niftiParams.path,
                                     world_from_anatomical=capnp_square_matrix(niftiParams.worldFromAnatomical),
@@ -117,7 +112,7 @@ class DeepDRRServer:
                                     segmentation=niftiParams.segmentation,
                                     # density_kwargs=None,
                                 )
-                                niftiVolume.faceup()
+                                niftiVolume.faceup()  # TODO: remove this
                                 self.volumes.append(
                                     niftiVolume
                                 )
@@ -138,21 +133,6 @@ class DeepDRRServer:
                             self.projector = None
                             self.projector_id = ""
 
-
-                        # output_dir = test_utils.get_output_dir()
-                        # data_dir = test_utils.download_sampledata("CTPelvic1K_sample")
-                        # patient = deepdrr.Volume.from_nifti(
-                        #     data_dir / "dataset6_CLINIC_0001_data.nii.gz", use_thresholding=True
-                        # )
-                        # patient.faceup()
-
-                        # # define the simulated C-arm
-                        # carm = deepdrr.MobileCArm(patient.center_in_world + geo.v(0, 0, -300))
-
-                        # # project in the AP view
-
-
-                        # self.projector = Projector(self.volumes, device=device)
                         self.projector = Projector(
                             volume=self.volumes,
                             device=device,
