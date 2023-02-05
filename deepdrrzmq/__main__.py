@@ -13,7 +13,7 @@ from PIL import Image
 from deepdrr import geo
 from deepdrr.projector import Projector
 
-from deepdrrzmq import SimpleDevice
+from deepdrrzmq.devices import SimpleDevice
 from deepdrrzmq.zmqutil import zmq_no_linger_context
 
 app = typer.Typer()
