@@ -116,8 +116,6 @@ def main(
         request.createProjector.projectorParams.volumes[0].nifti.path = "/home/wangl/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
         request.createProjector.projectorParams.volumes[0].nifti.useThresholding = True
 
-        request.createProjector.device
-
         # send the request
         req_socket.send(request.to_bytes())
         print("sent request")
