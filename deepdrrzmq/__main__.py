@@ -39,6 +39,22 @@ class DeepDRRServerException(Exception):
     def status_response(self):
         return make_response(self.code, self.message)
 
+def capnp_optional(optional):
+    if optional.which() == "value":
+        return optional.value
+    else:
+        return None
+
+def capnp_square_matrix(optional):
+    if len(optional.data) == 0:
+        return None
+    else:
+        arr = np.array(optional.data)
+        size = len(arr)
+        side = int(size ** 0.5)
+        assert size == side ** 2, f"expected square matrix, got {size} elements"
+        arr = arr.reshape((side, side))
+        return arr
 
 class DeepDRRServer:
     def __init__(self, context, rep_port, pub_port, sub_port):
@@ -78,11 +94,11 @@ class DeepDRRServer:
                                 self.volumes.append(
                                     deepdrr.Volume.from_nifti(
                                         path=niftiParams.path,
-                                        world_from_anatomical=niftiParams.worldFromAnatomical,
+                                        world_from_anatomical=capnp_square_matrix(niftiParams.worldFromAnatomical),
                                         use_thresholding=niftiParams.useThresholding,
                                         use_cached=niftiParams.useCached,
                                         save_cache=niftiParams.saveCache,
-                                        cache_dir=niftiParams.cacheDir,
+                                        cache_dir=capnp_optional(niftiParams.cacheDir),
                                         # materials=None,
                                         segmentation=niftiParams.segmentation,
                                         # density_kwargs=None,
@@ -90,13 +106,23 @@ class DeepDRRServer:
                                 )
                             else:
                                 raise DeepDRRServerException(1, f"unknown volume type: {volumeParams.which()}")
+                        
+                        deviceParams = projectorParams.device
+                        device = SimpleDevice(
+                            sensor_height=deviceParams.sensorHeight,
+                            sensor_width=deviceParams.sensorWidth,
+                            pixel_size=deviceParams.pixelSize,
+                            source_to_detector_distance=deviceParams.sourceToDetectorDistance,
+                            world_from_device=geo.FrameTransform(capnp_square_matrix(deviceParams.worldFromDevice)),
+                        )
+
 
                         self.projector = Projector(
                             volume=self.volumes,
+                            device=device,
                             step=projectorParams.step,
                             mode=projectorParams.mode,
                             spectrum=projectorParams.spectrum,
-                            add_scatter=projectorParams.addScatter,
                             scatter_num=projectorParams.scatterNum,
                             add_noise=projectorParams.addNoise,
                             photon_count=projectorParams.photonCount,
@@ -104,7 +130,7 @@ class DeepDRRServer:
                             max_block_index=projectorParams.maxBlockIndex,
                             collected_energy=projectorParams.collectedEnergy,
                             neglog=projectorParams.neglog,
-                            intensity_upper_bound=projectorParams.intensityUpperBound,
+                            intensity_upper_bound=capnp_optional(projectorParams.intensityUpperBound),
                             attenuate_outside_volume=projectorParams.attenuateOutsideVolume,
                         )
                         self.projector.__enter__()
@@ -153,7 +179,7 @@ class DeepDRRServer:
                         volumes_world_from_anatomical = []
                         for transform in request.volumesWorldFromAnatomical:
                             volumes_world_from_anatomical.append(
-                                np.array(transform.data).reshape(4, 4)
+                                geo.frame_transform(capnp_optional_matrix(transform))
                             )
 
                         if len(volumes_world_from_anatomical) == 0:
