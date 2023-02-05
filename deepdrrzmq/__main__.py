@@ -13,6 +13,7 @@ from PIL import Image
 from deepdrr import geo
 from deepdrr.projector import Projector
 
+from deepdrrzmq import SimpleDevice
 from deepdrrzmq.zmqutil import zmq_no_linger_context
 
 app = typer.Typer()
@@ -179,7 +180,7 @@ class DeepDRRServer:
                         volumes_world_from_anatomical = []
                         for transform in request.volumesWorldFromAnatomical:
                             volumes_world_from_anatomical.append(
-                                geo.frame_transform(capnp_optional_matrix(transform))
+                                geo.frame_transform(capnp_square_matrix(transform))
                             )
 
                         if len(volumes_world_from_anatomical) == 0:
