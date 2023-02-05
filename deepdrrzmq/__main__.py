@@ -110,11 +110,11 @@ class DeepDRRServer:
                         
                         deviceParams = projectorParams.device
                         device = SimpleDevice(
-                            sensor_height=deviceParams.sensorHeight,
-                            sensor_width=deviceParams.sensorWidth,
-                            pixel_size=deviceParams.pixelSize,
-                            source_to_detector_distance=deviceParams.sourceToDetectorDistance,
-                            world_from_device=geo.FrameTransform(capnp_square_matrix(deviceParams.worldFromDevice)),
+                            sensor_height=deviceParams.camera.intrinsic.sensorHeight,
+                            sensor_width=deviceParams.camera.intrinsic.sensorWidth,
+                            pixel_size=deviceParams.camera.intrinsic.pixelSize,
+                            source_to_detector_distance=deviceParams.camera.intrinsic.sourceToDetectorDistance,
+                            world_from_device=geo.frame_transform(capnp_square_matrix(deviceParams.camera.extrinsic)),
                         )
 
 
