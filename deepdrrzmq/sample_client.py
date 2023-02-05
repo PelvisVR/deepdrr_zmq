@@ -1,6 +1,10 @@
 import asyncio
 import io
+import math
 import os
+import random
+import threading
+import time
 from contextlib import contextmanager
 from typing import List
 
@@ -11,84 +15,21 @@ import zmq.asyncio
 from PIL import Image
 
 from deepdrrzmq.zmqutil import zmq_no_linger_context
+import cv2
+
 
 app = typer.Typer()
 
-
 file_path = os.path.dirname(os.path.realpath(__file__))
 messages = capnp.load(os.path.join(file_path, 'messages.capnp'))
-
-# struct NiftiLoaderParams {
-#     path @0 :Text;
-#     worldFromAnatomical @1 :Matrix4x4;
-#     useThresholding @2 :Bool;
-#     useCached @3 :Bool;
-#     saveCache @4 :Bool;
-#     cacheDir @5 :Text;
-# #   materials @? :List(Text);
-#     segmentation @6 :Bool;
-# #    densityKwargs @? :List(Text);
-# }
-#
-# struct DicomLoaderParams { # todo
-#     path @0 :Text;
-#     worldFromAnatomical @1 :Matrix4x4;
-#     useThresholding @2 :Bool;
-#     useCached @3 :Bool;
-#     saveCache @4 :Bool;
-#     cacheDir @5 :Text;
-# #   materials @? :List(Text);
-#     segmentation @6 :Bool;
-# #    densityKwargs @? :List(Text);
-# }
-#
-# struct VolumeLoaderParams {
-#     union {
-#         nifti @0 :NiftiLoaderParams;
-#         dicom @1 :DicomLoaderParams;
-#     }
-# }
-#
-# struct ProjectorParams {
-#     volumes @0 :List(VolumeLoaderParams);
-#     step @1 :Float32;
-#     mode @2 :Text;
-#     spectrum @3 :Text;
-#     addScatter @4 :Bool;
-#     scatterNum @5 :UInt32;
-#     addNoise @6 :Bool;
-#     photonCount @7 :UInt32;
-#     threads @8 :UInt32;
-#     maxBlockIndex @9 :UInt32;
-#     collectedEnergy @10 :Bool;
-#     neglog @11 :Bool;
-#     intensityUpperBound @12 :Float32;
-#     attenuateOutsideVolume @13 :Bool;
-# }
-#
-# struct CreateProjectorRequest {
-#     projectorId @0 :Text;
-#     projectorParams @1 :ProjectorParams;
-# }
-#
-# struct DeleteProjectorRequest {
-#     projectorId @0 :Text;
-# }
-#
-# struct ServerCommand {
-#     union {
-#         createProjector @0 :CreateProjectorRequest;
-#         deleteProjector @1 :DeleteProjectorRequest;
-#     }
-# }
 
 
 @app.command()
 def main(
         ip=typer.Argument('localhost', help="ip address of the server"),
         rep_port=typer.Argument(40000),
-        pub_port=typer.Argument(40001),
-        sub_port=typer.Argument(40002),
+        pub_port=typer.Argument(40002),
+        sub_port=typer.Argument(40001),
         # bind=typer.Option(True, help="bind to the port instead of connecting to it"),
 ):
 
@@ -127,6 +68,55 @@ def main(
 
         with messages.StatusResponse.from_bytes(response) as response:
             print(response)
+
+        def requester():
+            speed = 10
+            scale = 200
+
+            while True:
+                project_request = messages.ProjectRequest.new_message()
+
+                project_request.requestId = "asdf"
+                project_request.projectorId = "test"
+                project_request.init('cameraProjections', 1)
+                project_request.cameraProjections[0].extrinsic.init('data', 16)
+
+                matrix = np.array(
+                    [[0, -1, 0, -1.95599373],
+                     [1, 0, 0, -1293.28274],
+                     [0, 0, 1, 829.996703],
+                     [0, 0, 0, 1]],
+                )
+                # matrix = np.eye(4)
+                matrix[1, 3] += math.sin(time.time() * speed * 2 * math.pi) * scale
+                # matrix[1, 3] = 0
+                # matrix[2, 3] = 0
+
+                for i in range(16):
+                    project_request.cameraProjections[0].extrinsic.data[i] = float(matrix[i // 4, i % 4])
+
+                pub_socket.send_multipart([b"project/", project_request.to_bytes()])
+
+                print(f"sending: {project_request}")
+                time.sleep(2)  # simulate bad network conditions (10 fps)
+
+        # start the requester thread
+        threading.Thread(target=requester, daemon=True).start()
+
+        while True:
+            print("waiting for next image...")
+            topic, data = sub_socket.recv_multipart()
+            with messages.ProjectResponse.from_bytes(data) as response:
+                print(f"received image!")
+                for img in response.images:
+                    data = img.data
+                    # read jpeg bytes
+                    img = Image.open(io.BytesIO(data))
+                    print(img.size)
+                    # show with opencv
+                    cv2.imshow("image", np.array(img))
+                    cv2.waitKey(1)
+
 
 
 
