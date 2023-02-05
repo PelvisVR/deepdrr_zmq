@@ -27,26 +27,8 @@ class SimpleDevice(Device):
 
     @property
     def device_from_camera3d(self) -> geo.FrameTransform:
-        """Get the FrameTransform for the device's camera3d_from_device frame (in the current pose).
-
-        Args:
-            camera3d_transform (FrameTransform): the "camera3d_from_device" frame transformation for the device.
-
-        Returns:
-            FrameTransform: the "device_from_camera3d" frame transformation for the device.
-        """
         return geo.frame_transform(None)
 
     @property
-    @abstractmethod
     def principle_ray(self) -> geo.Vector3D:
-        """Get the principle ray for the device in the current pose in the device frame.
-
-        The principle ray is the direction of the ray that passes through the center of the
-        image. It points from the source toward the detector.
-
-        Returns:
-            Vector3D: the principle ray for the device as a unit vector.
-
-        """
         return geo.v(0, 0, 1)
