@@ -23,17 +23,20 @@ struct Image {
   data @0 :Data;
 }
 
+struct CameraIntrinsics {
+    sensorHeight @0 :UInt32 = 1536;
+    sensorWidth @1 :UInt32 = 1536;
+    pixelSize @2 :Float32 = 0.194;
+    sourceToDetectorDistance @2 :Float32 = 1020;
+}
+
 struct CameraProjection {
-    intrinsic @0 :Matrix3x3;
+    intrinsic @0 :CameraIntrinsics;
     extrinsic @1 :Matrix4x4;
 }
 
 struct Device {
-    sensorHeight @0 :UInt32;
-    sensorWidth @1 :UInt32;
-    pixelSize @2 :Float32;
-    cameraProjection @3 :CameraProjection;
-    sourceToDetectorDistance @4 :Float32;
+    camera @0 :CameraProjection;
 }
 
 struct NiftiLoaderParams {
