@@ -1,15 +1,8 @@
 @0xeaa72c8788903898;
 
-struct OptionalFloat32 {
+struct Optional(Value) {
     union {
-        value @0 :Float32;
-        none @1 :Void;
-    }
-}
-
-struct OptionalText {
-    union {
-        value @0 :Text;
+        value @0 :Value;
         none @1 :Void;
     }
 }
@@ -35,13 +28,21 @@ struct CameraProjection {
     extrinsic @1 :Matrix4x4;
 }
 
+struct Device {
+    sensorHeight @0 :UInt32;
+    sensorWidth @1 :UInt32;
+    pixelSize @2 :Float32;
+    cameraProjection @3 :CameraProjection;
+    sourceToDetectorDistance @4 :Float32;
+}
+
 struct NiftiLoaderParams {
     path @0 :Text;
     worldFromAnatomical @1 :Matrix4x4;
     useThresholding @2 :Bool = true;
     useCached @3 :Bool = true;
     saveCache @4 :Bool = false;
-    cacheDir @5 :OptionalText = (none = void);
+    cacheDir @5 :Optional(Text) = (none = void);
 #   materials @? :List(Text);
     segmentation @6 :Bool = false;
 #    densityKwargs @? :List(Text);
@@ -53,7 +54,7 @@ struct DicomLoaderParams { # todo
     useThresholding @2 :Bool = true;
     useCached @3 :Bool = true;
     saveCache @4 :Bool = false;
-    cacheDir @5 :OptionalText = (none = void);
+    cacheDir @5 :Optional(Text) = (none = void);
 #   materials @? :List(Text);
     segmentation @6 :Bool = false;
 #    densityKwargs @? :List(Text);
@@ -69,18 +70,19 @@ struct VolumeLoaderParams {
 struct ProjectorParams {
     volumes @0 :List(VolumeLoaderParams);
     priorities @1 :List(UInt32);
-    step @2 :Float32 = 0.1;
-    mode @3 :Text = "linear";
-    spectrum @4 :Text = "90KV_AL40";
-    scatterNum @5 :UInt32 = 0;
-    addNoise @6 :Bool = false;
-    photonCount @7 :UInt32 = 10000;
-    threads @8 :UInt32 = 8;
-    maxBlockIndex @9 :UInt32 = 1024;
-    collectedEnergy @10 :Bool = false;
-    neglog @11 :Bool = true;
-    intensityUpperBound @12 :OptionalFloat32 = (none = void);
-    attenuateOutsideVolume @13 :Bool = false;
+    device @2 :Device;
+    step @3 :Float32 = 0.1;
+    mode @4 :Text = "linear";
+    spectrum @5 :Text = "90KV_AL40";
+    scatterNum @6 :UInt32 = 0;
+    addNoise @7 :Bool = false;
+    photonCount @8 :UInt32 = 10000;
+    threads @9 :UInt32 = 8;
+    maxBlockIndex @10 :UInt32 = 1024;
+    collectedEnergy @11 :Bool = false;
+    neglog @12 :Bool = true;
+    intensityUpperBound @13 :Optional(Float32) = (none = void);
+    attenuateOutsideVolume @14 :Bool = false;
 }
 
 struct StatusResponse {

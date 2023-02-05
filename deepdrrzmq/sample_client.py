@@ -113,14 +113,17 @@ def main(
         request = messages.ServerCommand.new_message()
         request.createProjector.projectorId = "test"
         request.createProjector.projectorParams.init("volumes", 1)
-        request.createProjector.projectorParams.volumes[0].nifti.path = "~/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
+        request.createProjector.projectorParams.volumes[0].nifti.path = "/home/wangl/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
         request.createProjector.projectorParams.volumes[0].nifti.useThresholding = True
 
         # send the request
         req_socket.send(request.to_bytes())
+        print("sent request")
 
         # wait for the response
+        print("waiting for response")
         response = req_socket.recv()
+        print("received response")
 
         with messages.StatusResponse.from_bytes(response) as response:
             print(response)
