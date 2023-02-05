@@ -4,6 +4,15 @@ import os
 from contextlib import contextmanager
 from typing import List
 
+import deepdrr
+from deepdrr import geo
+from deepdrr.utils import test_utils, image_utils
+from deepdrr.projector import Projector
+from PIL import Image
+import logging
+import numpy as np
+
+
 import capnp
 import deepdrr
 import numpy as np
@@ -92,18 +101,25 @@ class DeepDRRServer:
                         for volumeParams in projectorParams.volumes:
                             if volumeParams.which() == "nifti":
                                 niftiParams = volumeParams.nifti
+                                # output_dir = test_utils.get_output_dir()
+                                # data_dir = test_utils.download_sampledata("CTPelvic1K_sample")
+                                # niftiVolume = deepdrr.Volume.from_nifti(
+                                #     data_dir / "dataset6_CLINIC_0001_data.nii.gz", use_thresholding=True
+                                # )
+                                niftiVolume = deepdrr.Volume.from_nifti(
+                                    path=niftiParams.path,
+                                    world_from_anatomical=capnp_square_matrix(niftiParams.worldFromAnatomical),
+                                    use_thresholding=niftiParams.useThresholding,
+                                    use_cached=niftiParams.useCached,
+                                    save_cache=niftiParams.saveCache,
+                                    cache_dir=capnp_optional(niftiParams.cacheDir),
+                                    # materials=None,
+                                    segmentation=niftiParams.segmentation,
+                                    # density_kwargs=None,
+                                )
+                                niftiVolume.faceup()
                                 self.volumes.append(
-                                    deepdrr.Volume.from_nifti(
-                                        path=niftiParams.path,
-                                        world_from_anatomical=capnp_square_matrix(niftiParams.worldFromAnatomical),
-                                        use_thresholding=niftiParams.useThresholding,
-                                        use_cached=niftiParams.useCached,
-                                        save_cache=niftiParams.saveCache,
-                                        cache_dir=capnp_optional(niftiParams.cacheDir),
-                                        # materials=None,
-                                        segmentation=niftiParams.segmentation,
-                                        # density_kwargs=None,
-                                    )
+                                    niftiVolume
                                 )
                             else:
                                 raise DeepDRRServerException(1, f"unknown volume type: {volumeParams.which()}")
@@ -117,7 +133,26 @@ class DeepDRRServer:
                             world_from_device=geo.frame_transform(capnp_square_matrix(deviceParams.camera.extrinsic)),
                         )
 
+                        if self.projector is not None:
+                            self.projector.__exit__(None, None, None)
+                            self.projector = None
+                            self.projector_id = ""
 
+
+                        # output_dir = test_utils.get_output_dir()
+                        # data_dir = test_utils.download_sampledata("CTPelvic1K_sample")
+                        # patient = deepdrr.Volume.from_nifti(
+                        #     data_dir / "dataset6_CLINIC_0001_data.nii.gz", use_thresholding=True
+                        # )
+                        # patient.faceup()
+
+                        # # define the simulated C-arm
+                        # carm = deepdrr.MobileCArm(patient.center_in_world + geo.v(0, 0, -300))
+
+                        # # project in the AP view
+
+
+                        # self.projector = Projector(self.volumes, device=device)
                         self.projector = Projector(
                             volume=self.volumes,
                             device=device,
@@ -172,8 +207,12 @@ class DeepDRRServer:
                         for camera_projection_struct in request.cameraProjections:
                             camera_projections.append(
                                 geo.CameraProjection(
-                                    intrinsic=np.array(camera_projection_struct.intrinsic.data).reshape(3, 3),
-                                    extrinsic=np.array(camera_projection_struct.extrinsic.data).reshape(4, 4),
+                                    intrinsic=geo.CameraIntrinsicTransform.from_sizes(
+                                        sensor_size=(camera_projection_struct.intrinsic.sensorWidth, camera_projection_struct.intrinsic.sensorHeight),
+                                        pixel_size=camera_projection_struct.intrinsic.pixelSize,
+                                        source_to_detector_distance=camera_projection_struct.intrinsic.sourceToDetectorDistance,
+                                    ),
+                                    extrinsic=geo.frame_transform(capnp_square_matrix(camera_projection_struct.extrinsic))
                                 )
                             )
 
@@ -192,27 +231,31 @@ class DeepDRRServer:
                             raise DeepDRRServerException(3, "volumes_world_from_anatomical length mismatch")
 
                         raw_images = self.projector.project(
-                            camera_projections=camera_projections,
+                            *camera_projections,
                         )
+
+                        if len(camera_projections) == 1:
+                            raw_images = [raw_images]
 
                         response = messages.ProjectResponse.new_message()
                         response.requestId = request.requestId
                         response.projectorId = request.projectorId
                         response.status = make_response(0, "ok")
 
-                        response.images = []
-                        for raw_image in raw_images:
+                        response.init("images", len(raw_images))
+
+                        for i, raw_image in enumerate(raw_images):
                             # use jpeg compression
                             pil_img = Image.fromarray((raw_image * 255).astype(np.uint8))
                             buffer = io.BytesIO()
                             pil_img.save(buffer, format="JPEG")
 
-                            image = messages.Image.new_message()
-                            image.data = buffer.getvalue()
-                            response.images.append(image)
+                            response.images[i].data = buffer.getvalue()
 
                         await pub_socket.send_multipart([b"project/", response.to_bytes()])
+                        print(f"sent images response!")
             except DeepDRRServerException as e:
+                print(f"server exception: {e}")
                 await pub_socket.send_multipart([b"project/", e.status_response().to_bytes()])
 
     def __enter__(self):

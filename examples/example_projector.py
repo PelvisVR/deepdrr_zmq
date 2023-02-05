@@ -6,6 +6,7 @@ from deepdrr import geo
 from deepdrr.utils import test_utils, image_utils
 from deepdrr.projector import Projector
 from PIL import Image
+import logging
 import numpy as np
 
 
