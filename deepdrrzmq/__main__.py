@@ -10,6 +10,7 @@ from deepdrr.utils import test_utils, image_utils
 from deepdrr.projector import Projector
 from PIL import Image
 import logging
+from pathlib import Path
 import numpy as np
 
 
@@ -102,7 +103,7 @@ class DeepDRRServer:
                             if volumeParams.which() == "nifti":
                                 niftiParams = volumeParams.nifti
                                 niftiVolume = deepdrr.Volume.from_nifti(
-                                    path=niftiParams.path,
+                                    path=str(Path(niftiParams.path).expanduser()),
                                     world_from_anatomical=capnp_square_matrix(niftiParams.worldFromAnatomical),
                                     use_thresholding=niftiParams.useThresholding,
                                     use_cached=niftiParams.useCached,
@@ -158,6 +159,9 @@ class DeepDRRServer:
                         raise DeepDRRServerException(2, f"unknown command: {command.which()}")
             except DeepDRRServerException as e:
                 await rep_socket.send_multipart([e.status_response().to_bytes()])
+            except Exception as e:
+                print(f"exception: {e}")
+                await rep_socket.send_multipart([make_response(1, str(e)).to_bytes()])
 
     async def project_server(self):
         sub_socket = self.context.socket(zmq.SUB)
@@ -174,9 +178,16 @@ class DeepDRRServer:
         while True:
             try:
                 topic, data = await sub_socket.recv_multipart()
+
+                try:
+                    for i in range(100):
+                        topic, data = await sub_socket.recv_multipart(flags=zmq.NOBLOCK)
+                except zmq.ZMQError:
+                    pass
+
                 if topic == b"project/":
                     with messages.ProjectRequest.from_bytes(data) as request:
-                        print(f"received project request: {request}")
+                        # print(f"received project request: {request}")
                         if self.projector is None:
                             raise DeepDRRServerException(1, "projector is not created")
 
@@ -233,7 +244,7 @@ class DeepDRRServer:
                             response.images[i].data = buffer.getvalue()
 
                         await pub_socket.send_multipart([b"project/", response.to_bytes()])
-                        print(f"sent images response!")
+                        # print(f"sent images response!")
             except DeepDRRServerException as e:
                 print(f"server exception: {e}")
                 await pub_socket.send_multipart([b"project/", e.status_response().to_bytes()])
@@ -251,9 +262,9 @@ class DeepDRRServer:
 @app.command()
 def main(
         # ip=typer.Argument('localhost', help="ip address of the receiver"),
-        rep_port=typer.Argument(40000),
-        pub_port=typer.Argument(40001),
-        sub_port=typer.Argument(40002),
+        rep_port=typer.Argument(40100),
+        pub_port=typer.Argument(40101),
+        sub_port=typer.Argument(40102),
         # bind=typer.Option(True, help="bind to the port instead of connecting to it"),
 ):
 
