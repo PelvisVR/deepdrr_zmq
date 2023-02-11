@@ -132,7 +132,7 @@ class DeepDRRServer:
                     if (f:=self.fps()) is not None:
                         print(f"FPS: {f:>5.2f}")
                 elif topic == b"projector_params_response/":
-                    await self.handle_projector_params_response(pub_socket, data)
+                    await self.handle_projector_params_response(data)
 
             except DeepDRRServerException as e:
                 print(f"server exception: {e}")
@@ -148,11 +148,11 @@ class DeepDRRServer:
     async def handle_projector_params_response(self, data):
         # for now, only one projector at a time
         # if the current projector is not the same as the one in the request, delete the old and create a new one
-        with messages.CreateProjectorRequest.from_bytes(data) as command:
-            if self.projector_id == command.createProjector.projectorId:
+        with messages.ProjectorParamsResponse.from_bytes(data) as command:
+            if self.projector_id == command.projectorId:
                 return
 
-            projectorParams = command.createProjector.projectorParams
+            projectorParams = command.projectorParams
 
             self.volumes = []
             for volumeParams in projectorParams.volumes:
@@ -207,7 +207,7 @@ class DeepDRRServer:
                 attenuate_outside_volume=projectorParams.attenuateOutsideVolume,
             )
             self.projector.__enter__()
-            self.projector_id = command.createProjector.projectorId
+            self.projector_id = command.projectorId
 
             print(f"created projector: {projectorParams}")
 
