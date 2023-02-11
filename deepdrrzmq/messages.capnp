@@ -115,18 +115,11 @@ struct ProjectResponse {
     images @3 :List(Image);
 }
 
-struct CreateProjectorRequest {
+struct ProjectorParamsResponse {
     projectorId @0 :Text;
     projectorParams @1 :ProjectorParams;
 }
 
-struct DeleteProjectorRequest {
+struct ProjectorParamsRequest {
     projectorId @0 :Text;
-}
-
-struct ServerCommand {
-    union {
-        createProjector @0 :CreateProjectorRequest;
-        deleteProjector @1 :DeleteProjectorRequest;
-    }
 }
