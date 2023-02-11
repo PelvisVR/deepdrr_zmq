@@ -17,6 +17,9 @@ from PIL import Image
 from deepdrrzmq.zmqutil import zmq_no_linger_context
 import cv2
 
+from scipy.spatial.transform import Rotation as R
+
+
 
 app = typer.Typer()
 
@@ -27,9 +30,9 @@ messages = capnp.load(os.path.join(file_path, 'messages.capnp'))
 @app.command()
 def main(
         ip=typer.Argument('localhost', help="ip address of the server"),
-        rep_port=typer.Argument(40000),
-        pub_port=typer.Argument(40002),
-        sub_port=typer.Argument(40001),
+        rep_port=typer.Argument(40100),
+        pub_port=typer.Argument(40102),
+        sub_port=typer.Argument(40101),
         # bind=typer.Option(True, help="bind to the port instead of connecting to it"),
 ):
 
@@ -54,8 +57,17 @@ def main(
         request = messages.ServerCommand.new_message()
         request.createProjector.projectorId = "test"
         request.createProjector.projectorParams.init("volumes", 1)
-        request.createProjector.projectorParams.volumes[0].nifti.path = "/home/wangl/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
+        request.createProjector.projectorParams.volumes[0].nifti.path = "~/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
         request.createProjector.projectorParams.volumes[0].nifti.useThresholding = True
+        resolution = 500
+        pixelSize = 1
+        request.createProjector.projectorParams.device.camera.intrinsic.sensorWidth = resolution
+        request.createProjector.projectorParams.device.camera.intrinsic.sensorHeight = resolution
+        request.createProjector.projectorParams.device.camera.intrinsic.pixelSize = pixelSize
+        request.createProjector.projectorParams.threads = 16
+        request.createProjector.projectorParams.photonCount = 10
+        request.createProjector.projectorParams.step = 2
+
 
         # send the request
         req_socket.send(request.to_bytes())
@@ -68,10 +80,25 @@ def main(
 
         with messages.StatusResponse.from_bytes(response) as response:
             print(response)
+            if response.code != 0:
+                print("server returned error")
+                return
 
         def requester():
-            speed = 10
-            scale = 200
+            speed = 0.1
+            scale = 30
+
+            og_matrix = np.array(
+                [[0, -1, 0, -1.95599373],
+                [1, 0, 0, -1293.28274],
+                [0, 0, 1, 829.996703],
+                [0, 0, 0, 1]],
+            )
+
+            rotspeed = 2
+
+
+
 
             while True:
                 project_request = messages.ProjectRequest.new_message()
@@ -81,38 +108,47 @@ def main(
                 project_request.init('cameraProjections', 1)
                 project_request.cameraProjections[0].extrinsic.init('data', 16)
 
-                matrix = np.array(
-                    [[0, -1, 0, -1.95599373],
-                     [1, 0, 0, -1293.28274],
-                     [0, 0, 1, 829.996703],
-                     [0, 0, 0, 1]],
-                )
+                matrix = og_matrix.copy()
                 # matrix = np.eye(4)
-                matrix[1, 3] += math.sin(time.time() * speed * 2 * math.pi) * scale
                 # matrix[1, 3] = 0
                 # matrix[2, 3] = 0
 
+                r = R.from_rotvec(time.time() * rotspeed * np.array([1, 0, 0]))
+
+                # to homogeneous
+                r_hom = np.eye(4)
+                r_hom[:3, :3] = r.as_matrix()
+
+                matrix =  matrix @ r_hom
+                # matrix = r_hom @ matrix
+
+                # matrix[1, 3] += math.sin(time.time() * speed * 2 * math.pi) * scale
+
+
                 for i in range(16):
                     project_request.cameraProjections[0].extrinsic.data[i] = float(matrix[i // 4, i % 4])
+                    project_request.cameraProjections[0].intrinsic.sensorWidth = resolution
+                    project_request.cameraProjections[0].intrinsic.sensorHeight = resolution
+                    project_request.cameraProjections[0].intrinsic.pixelSize = pixelSize
 
                 pub_socket.send_multipart([b"project/", project_request.to_bytes()])
 
-                print(f"sending: {project_request}")
-                time.sleep(2)  # simulate bad network conditions (10 fps)
+                # print(f"sending: {project_request}")
+                time.sleep(0.01)
 
         # start the requester thread
         threading.Thread(target=requester, daemon=True).start()
 
         while True:
-            print("waiting for next image...")
+            # print("waiting for next image...")
             topic, data = sub_socket.recv_multipart()
             with messages.ProjectResponse.from_bytes(data) as response:
-                print(f"received image!")
+                # print(f"received image!")
                 for img in response.images:
                     data = img.data
                     # read jpeg bytes
                     img = Image.open(io.BytesIO(data))
-                    print(img.size)
+                    # print(img.size)
                     # show with opencv
                     cv2.imshow("image", np.array(img))
                     cv2.waitKey(1)
