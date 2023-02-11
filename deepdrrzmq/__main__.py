@@ -22,6 +22,7 @@ import zmq.asyncio
 from PIL import Image
 from deepdrr import geo
 from deepdrr.projector import Projector
+from deepdrrzmq import timer_util
 
 from deepdrrzmq.devices import SimpleDevice
 from deepdrrzmq.zmqutil import zmq_no_linger_context
@@ -79,6 +80,8 @@ class DeepDRRServer:
 
         self.volumes = []  # type: List[deepdrr.Volume]
 
+        self.fps = timer_util.FPS(1)
+
     async def start(self):
         # control = self.control_server()
         project = self.project_server()
@@ -126,6 +129,8 @@ class DeepDRRServer:
 
                 if topic == b"project_request/":
                     await self.handle_project_request(pub_socket, data)
+                    if (f:=self.fps()) is not None:
+                        print(f"FPS: {f:>5.2f}")
                 elif topic == b"projector_params_response/":
                     await self.handle_projector_params_response(pub_socket, data)
 

@@ -33,7 +33,7 @@ pixelSize = 1
 async def start():
     receiver = receive_loop()
     requester = request_loop()
-    await asyncio.gather(requester)
+    await asyncio.gather(requester, receiver)
 
 async def request_loop():
     speed = 0.1
@@ -82,16 +82,18 @@ async def request_loop():
             project_request.cameraProjections[0].intrinsic.sensorHeight = resolution
             project_request.cameraProjections[0].intrinsic.pixelSize = pixelSize
 
-        pub_socket.send_multipart([b"project_request/", project_request.to_bytes()])
+        await pub_socket.send_multipart([b"project_request/", project_request.to_bytes()])
 
         # print(f"sending: {project_request}")
 
         await asyncio.sleep(0.01)
+        # await asyncio.sleep(1)
 
 async def receive_loop():
     while True:
         # print("waiting for next image...")
-        topic, data = sub_socket.recv_multipart()
+        topic, data = await sub_socket.recv_multipart()
+        # print(f"received: {topic}")
         if topic == b"project_response/":
             with messages.ProjectResponse.from_bytes(data) as response:
                 # print(f"received image!")
@@ -106,20 +108,22 @@ async def receive_loop():
         elif topic == b"projector_params_request/":
             with messages.StatusResponse.from_bytes(data) as response:
                 # request a new projector
-                msg = messages.ServerCommand.new_message()
-                msg.createProjector.projectorId = "test"
-                msg.createProjector.projectorParams.init("volumes", 1)
-                msg.createProjector.projectorParams.volumes[0].nifti.path = "~/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
-                msg.createProjector.projectorParams.volumes[0].nifti.useThresholding = True
+                msg = messages.ProjectorParamsResponse.new_message()
+                msg.projectorId = "test"
+                msg.projectorParams.init("volumes", 1)
+                msg.projectorParams.volumes[0].nifti.path = "~/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
+                msg.projectorParams.volumes[0].nifti.useThresholding = True
 
-                msg.createProjector.projectorParams.device.camera.intrinsic.sensorWidth = resolution
-                msg.createProjector.projectorParams.device.camera.intrinsic.sensorHeight = resolution
-                msg.createProjector.projectorParams.device.camera.intrinsic.pixelSize = pixelSize
-                msg.createProjector.projectorParams.threads = 16
-                msg.createProjector.projectorParams.photonCount = 10
-                msg.createProjector.projectorParams.step = 2
+                msg.projectorParams.device.camera.intrinsic.sensorWidth = resolution
+                msg.projectorParams.device.camera.intrinsic.sensorHeight = resolution
+                msg.projectorParams.device.camera.intrinsic.pixelSize = pixelSize
+                msg.projectorParams.threads = 16
+                msg.projectorParams.photonCount = 10
+                msg.projectorParams.step = 2
 
-                pub_socket.send_multipart([b"projector_params_response/", msg.to_bytes()])
+                await pub_socket.send_multipart([b"projector_params_response/", msg.to_bytes()])
+        else:
+            print(f"unknown topic: {topic}")
 
 
 @app.command()
@@ -136,7 +140,7 @@ def main(
     print(f"pub_port: {pub_port}")
     print(f"sub_port: {sub_port}")
 
-    with zmq_no_linger_context(zmq.Context()) as context:
+    with zmq_no_linger_context(zmq.asyncio.Context()) as context:
         global pub_socket, sub_socket, req_socket
 
         req_socket = context.socket(zmq.REQ)
