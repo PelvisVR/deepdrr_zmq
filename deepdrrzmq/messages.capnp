@@ -15,19 +15,19 @@ struct OptionalFloat32 {
 }
 
 struct Time {
-  millis @0 :UInt64;
+    millis @0 :UInt64;
 }
 
 struct Matrix3x3{
-  data @0 :List(Float32);
+    data @0 :List(Float32);
 }
 
 struct Matrix4x4 {
-  data @0 :List(Float32);
+    data @0 :List(Float32);
 }
 
 struct Image {
-  data @0 :Data;
+    data @0 :Data;
 }
 
 struct CameraIntrinsics {

@@ -1,0 +1,10 @@
+received project request: ( requestId = "asdf",
+  projectorId = "test",
+  cameraProjections = [
+    ( intrinsic = (
+        sensorHeight = 500,
+        sensorWidth = 500,
+        pixelSize = 1,
+        sourceToDetectorDistance = 1020 ),
+      extrinsic = (
+        data = [0, -1, 0, -1.9559938, 1, 0, 0, -1293.2827, 0, 0, 1, 829.9967, 0, 0, 0, 1] ) ) ] )
