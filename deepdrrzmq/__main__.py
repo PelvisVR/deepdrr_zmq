@@ -152,6 +152,8 @@ class DeepDRRServer:
             if self.projector_id == command.projectorId:
                 return
 
+            print(f"creating projector {command.projectorId}")
+
             projectorParams = command.projectorParams
 
             self.volumes = []
@@ -213,11 +215,12 @@ class DeepDRRServer:
 
     async def handle_project_request(self, pub_socket, data):
         with messages.ProjectRequest.from_bytes(data) as request:
-            # print(f"received project request: {request}")
+            print(f"received project request: {request}")
             if self.projector is None or request.projectorId != self.projector_id:
                 msg = messages.ProjectorParamsRequest.new_message()
                 msg.projectorId = request.projectorId
                 await pub_socket.send_multipart([b"projector_params_request/", msg.to_bytes()])
+                print(f"projector {request.projectorId} not found, requesting projector params")
                 return
 
             camera_projections = []

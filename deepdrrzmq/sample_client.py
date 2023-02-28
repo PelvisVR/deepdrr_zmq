@@ -70,7 +70,7 @@ async def request_loop():
         r_hom = np.eye(4)
         r_hom[:3, :3] = r.as_matrix()
 
-        matrix =  matrix @ r_hom
+        # matrix =  matrix @ r_hom
         # matrix = r_hom @ matrix
 
         # matrix[1, 3] += math.sin(time.time() * speed * 2 * math.pi) * scale
@@ -106,22 +106,23 @@ async def receive_loop():
                     cv2.imshow("image", np.array(img))
                     cv2.waitKey(1)
         elif topic == b"projector_params_request/":
-            with messages.StatusResponse.from_bytes(data) as response:
-                # request a new projector
-                msg = messages.ProjectorParamsResponse.new_message()
-                msg.projectorId = "test"
-                msg.projectorParams.init("volumes", 1)
-                msg.projectorParams.volumes[0].nifti.path = "~/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
-                msg.projectorParams.volumes[0].nifti.useThresholding = True
+            with messages.ProjectorParamsRequest.from_bytes(data) as request:
+                if request.projectorId == "test":
+                    # request a new projector
+                    msg = messages.ProjectorParamsResponse.new_message()
+                    msg.projectorId = "test"
+                    msg.projectorParams.init("volumes", 1)
+                    msg.projectorParams.volumes[0].nifti.path = "~/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
+                    msg.projectorParams.volumes[0].nifti.useThresholding = True
 
-                msg.projectorParams.device.camera.intrinsic.sensorWidth = resolution
-                msg.projectorParams.device.camera.intrinsic.sensorHeight = resolution
-                msg.projectorParams.device.camera.intrinsic.pixelSize = pixelSize
-                msg.projectorParams.threads = 16
-                msg.projectorParams.photonCount = 10
-                msg.projectorParams.step = 2
+                    msg.projectorParams.device.camera.intrinsic.sensorWidth = resolution
+                    msg.projectorParams.device.camera.intrinsic.sensorHeight = resolution
+                    msg.projectorParams.device.camera.intrinsic.pixelSize = pixelSize
+                    msg.projectorParams.threads = 16
+                    msg.projectorParams.photonCount = 10
+                    msg.projectorParams.step = 2
 
-                await pub_socket.send_multipart([b"projector_params_response/", msg.to_bytes()])
+                    await pub_socket.send_multipart([b"projector_params_response/", msg.to_bytes()])
         else:
             print(f"unknown topic: {topic}")
 
