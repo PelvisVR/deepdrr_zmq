@@ -30,6 +30,8 @@ messages = capnp.load(os.path.join(file_path, 'messages.capnp'))
 resolution = 500
 pixelSize = 1
 
+projector_id = "test2"
+
 async def start():
     receiver = receive_loop()
     requester = request_loop()
@@ -39,12 +41,19 @@ async def request_loop():
     speed = 0.1
     scale = 30
 
-    og_matrix = np.array(
-        [[0, -1, 0, -1.95599373],
-        [1, 0, 0, -1293.28274],
-        [0, 0, 1, 829.996703],
-        [0, 0, 0, 1]],
-    )
+    # og_matrix = np.array(
+    #     [[0, -1, 0, -1.95599373],
+    #     [1, 0, 0, -1293.28274],
+    #     [0, 0, 1, 829.996703],
+    #     [0, 0, 0, 1]],
+    # )
+
+    og_matrix = np.array([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 1000],
+        [0, 0, 0, 1]
+    ],)
 
     rotspeed = 2
 
@@ -55,7 +64,7 @@ async def request_loop():
         project_request = messages.ProjectRequest.new_message()
 
         project_request.requestId = "asdf"
-        project_request.projectorId = "test"
+        project_request.projectorId = projector_id
         project_request.init('cameraProjections', 1)
         project_request.cameraProjections[0].extrinsic.init('data', 16)
 
@@ -64,7 +73,7 @@ async def request_loop():
         # matrix[1, 3] = 0
         # matrix[2, 3] = 0
 
-        r = R.from_rotvec(time.time() * rotspeed * np.array([1, 0, 0]))
+        r = R.from_rotvec(math.sin(time.time() * rotspeed) * np.array([1, 0, 0]))
 
         # to homogeneous
         r_hom = np.eye(4)
@@ -106,6 +115,14 @@ async def receive_loop():
                     cv2.imshow("image", np.array(img))
                     cv2.waitKey(1)
         elif topic == b"projector_params_request/":
+            with messages.StatusResponse.from_bytes(data) as response:
+                # request a new projector
+                msg = messages.ProjectorParamsResponse.new_message()
+                msg.projectorId = projector_id
+                msg.projectorParams.init("volumes", 1)
+                msg.projectorParams.volumes[0].nifti.path = "/mnt/d/jhonedrive/Johns Hopkins/Benjamin D. Killeen - NMDID-ARCADE/nifti/THIN_BONE_TORSO/case-100114/THIN_BONE_TORSO_STANDARD_TORSO_Thorax_65008_11.nii.gz"
+                # msg.projectorParams.volumes[0].nifti.path = "~/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
+                msg.projectorParams.volumes[0].nifti.useThresholding = True
             with messages.ProjectorParamsRequest.from_bytes(data) as request:
                 if request.projectorId == "test":
                     # request a new projector
@@ -115,6 +132,12 @@ async def receive_loop():
                     msg.projectorParams.volumes[0].nifti.path = "~/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
                     msg.projectorParams.volumes[0].nifti.useThresholding = True
 
+                msg.projectorParams.device.camera.intrinsic.sensorWidth = resolution
+                msg.projectorParams.device.camera.intrinsic.sensorHeight = resolution
+                msg.projectorParams.device.camera.intrinsic.pixelSize = pixelSize
+                msg.projectorParams.threads = 16
+                msg.projectorParams.photonCount = 10
+                msg.projectorParams.step = 4
                     msg.projectorParams.device.camera.intrinsic.sensorWidth = resolution
                     msg.projectorParams.device.camera.intrinsic.sensorHeight = resolution
                     msg.projectorParams.device.camera.intrinsic.pixelSize = pixelSize
