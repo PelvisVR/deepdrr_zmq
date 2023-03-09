@@ -171,7 +171,6 @@ class DeepDRRServer:
                         segmentation=niftiParams.segmentation,
                         # density_kwargs=None,
                     )
-                    niftiVolume.faceup()  # TODO: remove this
                     self.volumes.append(
                         niftiVolume
                     )
