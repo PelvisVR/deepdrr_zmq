@@ -132,12 +132,12 @@ async def receive_loop():
                     msg.projectorParams.volumes[0].nifti.path = "~/datasets/DeepDRR_Data/CTPelvic1K_dataset6_CLINIC_0001/dataset6_CLINIC_0001_data.nii.gz"
                     msg.projectorParams.volumes[0].nifti.useThresholding = True
 
-                msg.projectorParams.device.camera.intrinsic.sensorWidth = resolution
-                msg.projectorParams.device.camera.intrinsic.sensorHeight = resolution
-                msg.projectorParams.device.camera.intrinsic.pixelSize = pixelSize
-                msg.projectorParams.threads = 16
-                msg.projectorParams.photonCount = 10
-                msg.projectorParams.step = 4
+                    msg.projectorParams.device.camera.intrinsic.sensorWidth = resolution
+                    msg.projectorParams.device.camera.intrinsic.sensorHeight = resolution
+                    msg.projectorParams.device.camera.intrinsic.pixelSize = pixelSize
+                    msg.projectorParams.threads = 16
+                    msg.projectorParams.photonCount = 10
+                    msg.projectorParams.step = 4
                     msg.projectorParams.device.camera.intrinsic.sensorWidth = resolution
                     msg.projectorParams.device.camera.intrinsic.sensorHeight = resolution
                     msg.projectorParams.device.camera.intrinsic.pixelSize = pixelSize
