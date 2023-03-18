@@ -174,6 +174,20 @@ class DeepDRRServer:
                     self.volumes.append(
                         niftiVolume
                     )
+                elif volumeParams.which() == "instrument":
+                    instrumentParams = volumeParams.instrument
+                    known_instruments = {
+                        "KWire": lambda: deepdrr.KWire(
+                            density=instrumentParams.density,
+                            world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
+                        ),
+                    }
+                    if instrumentParams.key not in known_instruments:
+                        raise DeepDRRServerException(1, f"unknown instrument: {instrumentParams.key}")
+                    instrumentVolume = known_instruments[instrumentParams.key]()
+                    self.volumes.append(
+                        instrumentVolume
+                    )
                 else:
                     raise DeepDRRServerException(1, f"unknown volume type: {volumeParams.which()}")
             

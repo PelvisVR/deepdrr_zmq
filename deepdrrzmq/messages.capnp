@@ -56,20 +56,16 @@ struct NiftiLoaderParams {
     segmentation @6 :Bool = false; # If the file is a segmentation file, then its "materials" correspond to a high density material.
 }
 
-struct DicomLoaderParams {
-    path @0 :Text; # Path to the dicom file on the server
+struct InstrumentLoaderParams {
+    type @0 :Text; # Type of instrument to load, options are: KWire
     worldFromAnatomical @1 :Matrix4x4; # Transformation from the world coordinate system to the anatomical coordinate system
-    useThresholding @2 :Bool = true; # Segment the materials using thresholding (faster but less accurate)
-    useCached @3 :Bool = true; # Use a cached segmentation if available.
-    saveCache @4 :Bool = false; # Save the segmentation to a cache file.
-    cacheDir @5 :Optional(Text) = (none = void); # Directory to save the cache file to.
-    segmentation @6 :Bool = false; # If the file is a segmentation file, then its "materials" correspond to a high density material.
+    density @2 :Float32 = true; # Segment the materials using thresholding (faster but less accurate)
 }
 
 struct VolumeLoaderParams {
     union {
         nifti @0 :NiftiLoaderParams;
-        dicom @1 :DicomLoaderParams;
+        instrument @1 :InstrumentLoaderParams;
     }
 }
      
