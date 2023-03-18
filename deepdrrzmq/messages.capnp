@@ -59,7 +59,7 @@ struct NiftiLoaderParams {
 struct InstrumentLoaderParams {
     type @0 :Text; # Type of instrument to load, options are: KWire
     worldFromAnatomical @1 :Matrix4x4; # Transformation from the world coordinate system to the anatomical coordinate system
-    density @2 :Float32 = true; # Segment the materials using thresholding (faster but less accurate)
+    density @2 :Float32 = 0.1; # Segment the materials using thresholding (faster but less accurate)
 }
 
 struct VolumeLoaderParams {
