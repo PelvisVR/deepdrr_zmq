@@ -27,6 +27,9 @@ from deepdrrzmq import timer_util
 from deepdrrzmq.devices import SimpleDevice
 from deepdrrzmq.zmqutil import zmq_no_linger_context
 
+from .instruments.KWire300mm import KWire300mm
+from .instruments.KWire450mm import KWire450mm
+
 app = typer.Typer()
 
 file_path = os.path.dirname(os.path.realpath(__file__))
@@ -177,14 +180,18 @@ class DeepDRRServer:
                 elif volumeParams.which() == "instrument":
                     instrumentParams = volumeParams.instrument
                     known_instruments = {
-                        "KWire": lambda: deepdrr.KWire(
+                        "KWire300mm": lambda: KWire300mm(
+                            density=instrumentParams.density,
+                            world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
+                        ),
+                        "KWire450mm": lambda: KWire450mm(
                             density=instrumentParams.density,
                             world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
                         ),
                     }
-                    if instrumentParams.key not in known_instruments:
-                        raise DeepDRRServerException(1, f"unknown instrument: {instrumentParams.key}")
-                    instrumentVolume = known_instruments[instrumentParams.key]()
+                    if instrumentParams.type not in known_instruments:
+                        raise DeepDRRServerException(1, f"unknown instrument: {instrumentParams.type}")
+                    instrumentVolume = known_instruments[instrumentParams.type]()
                     self.volumes.append(
                         instrumentVolume
                     )

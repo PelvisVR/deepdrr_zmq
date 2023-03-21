@@ -4,7 +4,7 @@ from deepdrr.instruments import Instrument
 from deepdrr import geo
 
 
-class KWire(Instrument):
+class KWire450mm(Instrument):
 
     def __init__(
         self,
