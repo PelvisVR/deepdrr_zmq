@@ -13,6 +13,8 @@ import logging
 from pathlib import Path
 import numpy as np
 
+import time
+
 
 import capnp
 import deepdrr
@@ -29,6 +31,10 @@ from deepdrrzmq.zmqutil import zmq_no_linger_context
 
 from .instruments.KWire300mm import KWire300mm
 from .instruments.KWire450mm import KWire450mm
+
+from .instruments.MeshVolume import MeshVolume
+
+import pyvista as pv
 
 app = typer.Typer()
 
@@ -194,6 +200,26 @@ class DeepDRRServer:
                     instrumentVolume = known_instruments[instrumentParams.type]()
                     self.volumes.append(
                         instrumentVolume
+                    )
+                elif volumeParams.which() == "mesh":
+                    meshParams = volumeParams.mesh
+                    surfaces = []
+                    for volumeMesh in meshes:
+                        vertices = np.array(volumeMesh.vertices).reshape(-1, 3)
+                        faces = np.array(volumeMesh.faces).reshape(-1, 3)
+                        faces = np.pad(faces, ((0, 0), (1, 0)), constant_values=3)
+                        surface = pv.PolyData(vertices, faces)
+                        surface.plot(show_edges=True)
+                        print("showing surface")
+                        time.sleep(10)
+                        surfaces.append((volumeMesh.material, volumeMesh.density, surface))
+
+                    meshVolume = MeshVolume(
+                        voxel_size=meshParams.voxelSize,
+                        surfaces=surfaces # List[Tuple[str, float, pv.PolyData]] = [], # material, density, surface
+                    )
+                    self.volumes.append(
+                        meshVolume
                     )
                 else:
                     raise DeepDRRServerException(1, f"unknown volume type: {volumeParams.which()}")

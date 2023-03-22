@@ -26,6 +26,22 @@ struct Matrix4x4 {
     data @0 :List(Float32);
 }
 
+struct Mesh {
+    vertices @0 :List(Float32);
+    faces @1 :List(Int32);
+}
+
+struct VolumeMesh {
+    mesh @0 :Mesh;
+    material @1 :Text;
+    density @2 :Float32 = -1;
+}
+
+struct MeshLoaderParams {
+    meshes @0 :List(VolumeMesh);
+    voxelSize @1 :Float32 = 0.1;
+}
+
 struct Image {
     data @0 :Data;
 }
@@ -66,6 +82,7 @@ struct VolumeLoaderParams {
     union {
         nifti @0 :NiftiLoaderParams;
         instrument @1 :InstrumentLoaderParams;
+        mesh @2 :MeshLoaderParams;
     }
 }
      
