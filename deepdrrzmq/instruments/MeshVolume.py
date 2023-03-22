@@ -41,10 +41,9 @@ class MeshVolume(Volume, ABC):
         surfaces: List[Tuple[str, float, pv.PolyData]] = [], # material, density, surface
     ):
         self.voxel_size = voxel_size
-        self.surfaces = surfaces
 
         bounds = []
-        for material, density, surface in self.surfaces:
+        for material, density, surface in surfaces:
             bounds.append(surface.bounds)
 
         bounds = np.array(bounds)
@@ -52,8 +51,18 @@ class MeshVolume(Volume, ABC):
         x_max, y_max, z_max = bounds[:, [1, 3, 5]].max(0)
         bounds = [x_min, x_max, y_min, y_max, z_min, z_max]
 
+        # combine surfaces wiht same material and approx same density
+        surface_dict = defaultdict(list)
+        for material, density, surface in surfaces:
+            surface_dict[(material, int(density * 100))].append((material, density, surface))
+        
+        combined_surfaces = []
+        for _, surfaces in surface_dict.items():
+            combined_surfaces.append((surfaces[0][0], surfaces[0][1], sum([s[2] for s in surfaces], pv.PolyData())))
+        surfaces = combined_surfaces
+
         segmentations = []
-        for material, density, surface in self.surfaces:
+        for material, density, surface in surfaces:
             segmentation, anatomical_from_ijk = utils.mesh_utils.voxelize(
                 surface,
                 density=self.voxel_size,
