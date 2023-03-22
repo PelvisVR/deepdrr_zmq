@@ -11,7 +11,12 @@ https://github.com/arcadelab/deepdrr
 - Windows ssh key auth: https://superuser.com/questions/1510227/authorized-keys-win-10-ssh-issue
 
 ## TODO
-- Auto tool loader
-- Allow recreate projector
+<!-- - Auto tool loader -->
+<!-- - Allow recreate projector -->
+<!-- - Cache volumes -->
 - Docker container
 - Watchdog
+
+
+## Questions
+- Does deepdrr support volume instancing?

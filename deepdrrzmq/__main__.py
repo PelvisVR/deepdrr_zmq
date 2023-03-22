@@ -32,11 +32,12 @@ from deepdrrzmq.zmqutil import zmq_no_linger_context
 from .instruments.KWire300mm import KWire300mm
 from .instruments.KWire450mm import KWire450mm
 
-from .instruments.MeshVolume import MeshVolume
+from .drrutil import from_nifti_cached, from_meshes_cached
 
 import pyvista as pv
 
-app = typer.Typer()
+# app = typer.Typer()
+app = typer.Typer(pretty_exceptions_show_locals=False)
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 messages = capnp.load(os.path.join(file_path, 'messages.capnp'))
@@ -128,20 +129,26 @@ class DeepDRRServer:
 
         while True:
             try:
+                latest_msgs = {}
+
                 topic, data = await sub_socket.recv_multipart()
+                latest_msgs[topic] = data
 
                 try:
-                    for _ in range(100):
+                    for i in range(1000):
                         topic, data = await sub_socket.recv_multipart(flags=zmq.NOBLOCK)
+                        latest_msgs[topic] = data
                 except zmq.ZMQError:
                     pass
+                print(i)
 
-                if topic == b"project_request/":
-                    await self.handle_project_request(pub_socket, data)
-                    if (f:=self.fps()) is not None:
-                        print(f"FPS: {f:>5.2f}")
-                elif topic == b"projector_params_response/":
-                    await self.handle_projector_params_response(data)
+                for topic, data in latest_msgs.items():
+                    if topic == b"project_request/":
+                        await self.handle_project_request(pub_socket, data)
+                        if (f:=self.fps()) is not None:
+                            print(f"FPS: {f:>5.2f}")
+                    elif topic == b"projector_params_response/":
+                        await self.handle_projector_params_response(data)
 
             except DeepDRRServerException as e:
                 print(f"server exception: {e}")
@@ -170,7 +177,7 @@ class DeepDRRServer:
                 print(f"adding {volumeParams.which()} volume")
                 if volumeParams.which() == "nifti":
                     niftiParams = volumeParams.nifti
-                    niftiVolume = deepdrr.Volume.from_nifti(
+                    niftiVolume = from_nifti_cached(
                         path=str(Path(niftiParams.path).expanduser()),
                         world_from_anatomical=capnp_square_matrix(niftiParams.worldFromAnatomical),
                         use_thresholding=niftiParams.useThresholding,
@@ -215,7 +222,7 @@ class DeepDRRServer:
                         surface = pv.PolyData(vertices, faces)
                         surfaces.append((volumeMesh.material, volumeMesh.density, surface))
 
-                    meshVolume = MeshVolume(
+                    meshVolume = from_meshes_cached(
                         voxel_size=meshParams.voxelSize,
                         surfaces=surfaces # List[Tuple[str, float, pv.PolyData]] = [], # material, density, surface
                     )
@@ -225,6 +232,7 @@ class DeepDRRServer:
                 else:
                     raise DeepDRRServerException(1, f"unknown volume type: {volumeParams.which()}")
             
+            print(f"creating projector")
             deviceParams = projectorParams.device
             device = SimpleDevice(
                 sensor_height=deviceParams.camera.intrinsic.sensorHeight,
@@ -258,7 +266,7 @@ class DeepDRRServer:
             self.projector.__enter__()
             self.projector_id = command.projectorId
 
-            print(f"created projector: {projectorParams}")
+            print(f"created projector {self.projector_id}")
 
     async def handle_project_request(self, pub_socket, data):
         with messages.ProjectRequest.from_bytes(data) as request:
