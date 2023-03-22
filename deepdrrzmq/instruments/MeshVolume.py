@@ -41,9 +41,10 @@ class MeshVolume(Volume, ABC):
         surfaces: List[Tuple[str, float, pv.PolyData]] = [], # material, density, surface
     ):
         self.voxel_size = voxel_size
+        self.surfaces = surfaces
 
         bounds = []
-        for material, density, surface in surfaces:
+        for material, density, surface in self.surfaces:
             bounds.append(surface.bounds)
 
         bounds = np.array(bounds)
@@ -52,7 +53,7 @@ class MeshVolume(Volume, ABC):
         bounds = [x_min, x_max, y_min, y_max, z_min, z_max]
 
         segmentations = []
-        for material, surface in self.surfaces.items():
+        for material, density, surface in self.surfaces:
             segmentation, anatomical_from_ijk = utils.mesh_utils.voxelize(
                 surface,
                 density=self.voxel_size,
@@ -65,10 +66,10 @@ class MeshVolume(Volume, ABC):
             material_segmentations[material].append(segmentation)
 
         material_segmentations_combined = {}
-        for material, segmentations in material_segmentations.items():
-            material_segmentations_combined[material] = np.logical_or.reduce(segmentations).astype(np.uint8)
+        for material, seg in material_segmentations.items():
+            material_segmentations_combined[material] = np.logical_or.reduce(seg).astype(np.uint8)
 
-        data = np.zeros_like(list(material_segmentations.values())[0], dtype=np.float64)
+        data = np.zeros_like(list(material_segmentations_combined.values())[0], dtype=np.float64)
         for (material, density, _), segmentation in zip(surfaces, segmentations):
             # if density is negative, use the default density
             if density < -0.01:

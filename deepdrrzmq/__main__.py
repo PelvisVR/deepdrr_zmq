@@ -167,6 +167,7 @@ class DeepDRRServer:
 
             self.volumes = []
             for volumeParams in projectorParams.volumes:
+                print(f"adding {volumeParams.which()} volume")
                 if volumeParams.which() == "nifti":
                     niftiParams = volumeParams.nifti
                     niftiVolume = deepdrr.Volume.from_nifti(
@@ -204,14 +205,14 @@ class DeepDRRServer:
                 elif volumeParams.which() == "mesh":
                     meshParams = volumeParams.mesh
                     surfaces = []
-                    for volumeMesh in meshes:
-                        vertices = np.array(volumeMesh.vertices).reshape(-1, 3)
-                        faces = np.array(volumeMesh.faces).reshape(-1, 3)
+                    for volumeMesh in meshParams.meshes:
+                        vertices = np.array(volumeMesh.mesh.vertices).reshape(-1, 3)
+                        faces = np.array(volumeMesh.mesh.faces).reshape(-1, 3)
                         faces = np.pad(faces, ((0, 0), (1, 0)), constant_values=3)
+                        faces = faces.flatten()
+                        if len(faces) == 0:
+                            continue
                         surface = pv.PolyData(vertices, faces)
-                        surface.plot(show_edges=True)
-                        print("showing surface")
-                        time.sleep(10)
                         surfaces.append((volumeMesh.material, volumeMesh.density, surface))
 
                     meshVolume = MeshVolume(
