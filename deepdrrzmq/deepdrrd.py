@@ -29,9 +29,6 @@ from deepdrrzmq.utils import timer_util
 from deepdrrzmq.devices import SimpleDevice
 from deepdrrzmq.utils.zmq_util import zmq_no_linger_context
 
-from .instruments.KWire300mm import KWire300mm
-from .instruments.KWire450mm import KWire450mm
-
 from .utils.drr_util import from_nifti_cached, from_meshes_cached
 from .utils.typer_util import unwrap_typer_param
 
@@ -194,14 +191,14 @@ class DeepDRRServer:
                 elif volumeParams.which() == "instrument":
                     instrumentParams = volumeParams.instrument
                     known_instruments = {
-                        "KWire300mm": lambda: KWire300mm(
-                            density=instrumentParams.density,
-                            world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
-                        ),
-                        "KWire450mm": lambda: KWire450mm(
-                            density=instrumentParams.density,
-                            world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
-                        ),
+                        # "KWire300mm": lambda: KWire300mm(
+                        #     density=instrumentParams.density,
+                        #     world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
+                        # ),
+                        # "KWire450mm": lambda: KWire450mm(
+                        #     density=instrumentParams.density,
+                        #     world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
+                        # ),
                     }
                     if instrumentParams.type not in known_instruments:
                         raise DeepDRRServerException(1, f"unknown instrument: {instrumentParams.type}")

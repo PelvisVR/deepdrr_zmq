@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from imp import source_from_cache
 import logging
 from abc import ABC

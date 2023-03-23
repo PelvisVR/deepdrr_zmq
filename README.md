@@ -19,6 +19,8 @@ https://github.com/arcadelab/deepdrr
 - Heartbeat watchdog
 - Proxy
 - Faster decode
+- Auto cache cleanup
+- Faster mesh voxelization
 
 
 ## Questions

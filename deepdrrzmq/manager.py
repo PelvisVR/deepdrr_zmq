@@ -1,3 +1,5 @@
+# adapted from https://github.com/commaai/openpilot
+
 import datetime
 import os
 import signal
