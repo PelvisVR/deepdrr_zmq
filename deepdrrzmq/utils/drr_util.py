@@ -1,6 +1,6 @@
 from joblib import Memory
 import deepdrr
-from .instruments.MeshVolume import from_meshes
+from ..instruments.MeshVolume import from_meshes
 
 joblib_cache = deepdrr.utils.data_utils.deepdrr_data_dir()/"joblib_cache"
 joblib_cache.mkdir(parents=True, exist_ok=True)

@@ -24,15 +24,16 @@ import zmq.asyncio
 from PIL import Image
 from deepdrr import geo
 from deepdrr.projector import Projector
-from deepdrrzmq import timer_util
+from deepdrrzmq.utils import timer_util
 
 from deepdrrzmq.devices import SimpleDevice
-from deepdrrzmq.zmqutil import zmq_no_linger_context
+from deepdrrzmq.utils.zmq_util import zmq_no_linger_context
 
 from .instruments.KWire300mm import KWire300mm
 from .instruments.KWire450mm import KWire450mm
 
-from .drrutil import from_nifti_cached, from_meshes_cached
+from .utils.drr_util import from_nifti_cached, from_meshes_cached
+from .utils.typer_util import unwrap_typer_param
 
 import pyvista as pv
 
@@ -140,13 +141,12 @@ class DeepDRRServer:
                         latest_msgs[topic] = data
                 except zmq.ZMQError:
                     pass
-                print(i)
 
                 for topic, data in latest_msgs.items():
                     if topic == b"project_request/":
                         await self.handle_project_request(pub_socket, data)
                         if (f:=self.fps()) is not None:
-                            print(f"FPS: {f:>5.2f}")
+                            print(f"DRR project rate: {f:>5.2f} frames per second")
                     elif topic == b"projector_params_response/":
                         await self.handle_projector_params_response(data)
 
@@ -270,7 +270,7 @@ class DeepDRRServer:
 
     async def handle_project_request(self, pub_socket, data):
         with messages.ProjectRequest.from_bytes(data) as request:
-            print(f"received project request: {request}")
+            # print(f"received project request: {request.requestId} for projector {request.projectorId}")
             if self.projector is None or request.projectorId != self.projector_id:
                 msg = messages.ProjectorParamsRequest.new_message()
                 msg.projectorId = request.projectorId
@@ -332,8 +332,8 @@ class DeepDRRServer:
     
 
 
-
 @app.command()
+@unwrap_typer_param
 def main(
         # ip=typer.Argument('localhost', help="ip address of the receiver"),
         rep_port=typer.Argument(40100),
@@ -353,8 +353,5 @@ def main(
 
 
 if __name__ == '__main__':
-    try:
-        app()
-    except KeyboardInterrupt:
-        pass
-    print("Exiting...")
+    app()
+

@@ -14,8 +14,11 @@ https://github.com/arcadelab/deepdrr
 <!-- - Auto tool loader -->
 <!-- - Allow recreate projector -->
 <!-- - Cache volumes -->
+<!-- - Manager -->
 - Docker container
-- Watchdog
+- Heartbeat watchdog
+- Proxy
+- Faster decode
 
 
 ## Questions

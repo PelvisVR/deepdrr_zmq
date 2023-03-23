@@ -15,7 +15,7 @@ import typer
 import zmq.asyncio
 from PIL import Image
 
-from deepdrrzmq.zmqutil import zmq_no_linger_context
+from deepdrrzmq.utils.zmq_util import zmq_no_linger_context
 import cv2
 
 from scipy.spatial.transform import Rotation as R
