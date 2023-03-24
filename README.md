@@ -25,3 +25,5 @@ https://github.com/arcadelab/deepdrr
 
 ## Questions
 - Does deepdrr support volume instancing?
+
+docker run --runtime=nvidia --gpus all -p 40101:40101 -p 40102:40102 --rm deepdrrzmq

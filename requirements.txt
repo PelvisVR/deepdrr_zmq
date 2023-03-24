@@ -1,0 +1,7 @@
+deepdrr==1.1.2
+pyzmq
+pycapnp
+typer
+scipy
+joblib
+# pipenv
