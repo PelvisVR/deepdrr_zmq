@@ -4,7 +4,9 @@
 
 ZMQ/Capnp interface for [DeepDRR](https://github.com/arcadelab/deepdrr).
 
-
+## Windows Setup
+- Install wsl2
+- Increase wsl2 available memory
 
 ## Installation
 - `mamba env create -f ./environment.yml`
@@ -27,6 +29,7 @@ ZMQ/Capnp interface for [DeepDRR](https://github.com/arcadelab/deepdrr).
 - [ ] Faster decode
 - [ ] Auto cache cleanup
 - [ ] Faster mesh voxelization
+- [ ] Power save mode and auto shutdown after idle
 
 ## Questions
 - Does deepdrr support volume instancing?
