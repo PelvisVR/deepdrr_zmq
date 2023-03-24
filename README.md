@@ -13,6 +13,9 @@ ZMQ/Capnp interface for [DeepDRR](https://github.com/arcadelab/deepdrr).
 ## Usage
 - `python -m deepdrrzmq.manager`
 
+## Docker Install
+- If on windows, don't use docker desktop 4.17.1 https://github.com/docker/for-win/issues/13324
+
 ## TODO 
 - [x] Auto tool loader
 - [x] Allow recreate projector
