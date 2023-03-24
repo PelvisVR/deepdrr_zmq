@@ -11,12 +11,10 @@ services:
       - PATIENT_DATA_DIR=/patientdata
       - DEEPDRR_DATA_DIR=/deepdrrcache
     # depends_on:
-    #   - pyradonc
-    #   - usdzconvert
     volumes:
       # Patient data
       - type: bind
-        source: /home/wangl/OneDrive_wwang136/NMDID-ARCADE
+        source: ${DOCKER_PATIENT_DATA_DIR}
         target: /patientdata
         read_only: true
       # DeepDRR Cache Volume
