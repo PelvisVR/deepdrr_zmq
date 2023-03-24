@@ -89,6 +89,12 @@ class DeepDRRServer:
         self.volumes = []  # type: List[deepdrr.Volume]
 
         self.fps = timer_util.FPS(1)
+        
+        # PATIENT_DATA_DIR environment variable is set by the docker container
+        default_data_dir = Path("/mnt/d/jhonedrive/Johns Hopkins/Benjamin D. Killeen - NMDID-ARCADE/")  # TODO: remove
+        self.patient_data_dir = Path(os.environ.get("PATIENT_DATA_DIR", default_data_dir))
+
+        logging.info(f"patient data dir: {self.patient_data_dir}")
 
     async def start(self):
         # control = self.control_server()
@@ -141,9 +147,9 @@ class DeepDRRServer:
 
                 for topic, data in latest_msgs.items():
                     if topic == b"project_request/":
-                        await self.handle_project_request(pub_socket, data)
-                        if (f:=self.fps()) is not None:
-                            print(f"DRR project rate: {f:>5.2f} frames per second")
+                        if await self.handle_project_request(pub_socket, data):
+                            if (f:=self.fps()) is not None:
+                                print(f"DRR project rate: {f:>5.2f} frames per second")
                     elif topic == b"projector_params_response/":
                         await self.handle_projector_params_response(data)
 
@@ -174,8 +180,15 @@ class DeepDRRServer:
                 print(f"adding {volumeParams.which()} volume")
                 if volumeParams.which() == "nifti":
                     niftiParams = volumeParams.nifti
+
+                    # if niftiParams.path is a relative path, make it relative to the patient data directory
+                    if not Path(niftiParams.path).expanduser().is_absolute():
+                        niftiPath = str(self.patient_data_dir / niftiParams.path)
+                    else:
+                        niftiPath = niftiParams.path
+
                     niftiVolume = from_nifti_cached(
-                        path=str(Path(niftiParams.path).expanduser()),
+                        path=niftiPath,
                         world_from_anatomical=capnp_square_matrix(niftiParams.worldFromAnatomical),
                         use_thresholding=niftiParams.useThresholding,
                         use_cached=niftiParams.useCached,
@@ -273,7 +286,7 @@ class DeepDRRServer:
                 msg.projectorId = request.projectorId
                 await pub_socket.send_multipart([b"projector_params_request/", msg.to_bytes()])
                 print(f"projector {request.projectorId} not found, requesting projector params")
-                return
+                return False
 
             camera_projections = []
             for camera_projection_struct in request.cameraProjections:
@@ -326,6 +339,8 @@ class DeepDRRServer:
 
             await pub_socket.send_multipart([b"project_response/", msg.to_bytes()])
             # print(f"sent images response!")
+
+            return True
     
 
 

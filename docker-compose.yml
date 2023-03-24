@@ -1,0 +1,40 @@
+version: "3.9"
+services:
+  deepdrrzmq:
+    # image: ghcr.io/liamjwang/radoncxr-server:master
+    restart: unless-stopped
+    ports:
+      - "40100:40100"
+      - "40101:40101"
+      - "40102:40102"
+    environment:
+      - PATIENT_DATA_DIR=/patientdata
+      - DEEPDRR_DATA_DIR=/deepdrrcache
+    # depends_on:
+    #   - pyradonc
+    #   - usdzconvert
+    volumes:
+      # Patient data
+      - type: bind
+        source: /home/wangl/OneDrive_wwang136/NMDID-ARCADE
+        target: /patientdata
+        read_only: true
+      # DeepDRR Cache Volume
+      - type: volume
+        source: deepdrrcache
+        target: /deepdrrcache
+        read_only: false
+    pull_policy: build
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+volumes:
+  deepdrrcache:
+    driver: local
