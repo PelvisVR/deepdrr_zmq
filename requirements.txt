@@ -4,4 +4,3 @@ pycapnp
 typer
 scipy
 joblib
-# pipenv

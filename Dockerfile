@@ -5,10 +5,6 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 build-essential -y
 
-# COPY environment.yml .
-
-# RUN conda env update -f environment.yml
-
 RUN conda install -c conda-forge pycuda -y
 
 COPY requirements.txt .
