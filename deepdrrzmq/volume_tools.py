@@ -12,6 +12,8 @@ from typing import Tuple
 import numpy as np
 import pyvista as pv
 from deepdrr import geo
+import deepdrr
+import time
 
 from deepdrr.vol import Volume
 from deepdrr.utils import listify
@@ -23,83 +25,12 @@ from collections import defaultdict
 log = logging.getLogger(__name__)
 
 
-def voxelize_inner(mesh, density=None, check_surface=True):
-    """Voxelize mesh to UnstructuredGrid.
+# def voxelize_inner(mesh, bounds, density=None, check_surface=True):
 
-    Parameters
-    ----------
-    density : float, np.ndarray or collections.abc.Sequence
-        The uniform size of the voxels when single float passed.
-        A list of densities along x,y,z directions.
-        Defaults to 1/100th of the mesh length.
-
-    check_surface : bool
-        Specify whether to check the surface for closure. If on, then the
-        algorithm first checks to see if the surface is closed and
-        manifold. If the surface is not closed and manifold, a runtime
-        error is raised.
-
-    Returns
-    -------
-    pyvista.UnstructuredGrid
-        Voxelized unstructured grid of the original mesh.
-
-    Examples
-    --------
-    Create an equal density voxelized mesh.
-
-    >>> import pyvista as pv
-    >>> from pyvista import examples
-    >>> mesh = examples.download_bunny_coarse().clean()
-    >>> vox = pv.voxelize(mesh, density=0.01)
-    >>> vox.plot(show_edges=True)
-
-    Create a voxelized mesh using unequal density dimensions.
-
-    >>> vox = pv.voxelize(mesh, density=[0.01, 0.005, 0.002])
-    >>> vox.plot(show_edges=True)
-
-    """
-    if not pv.is_pyvista_dataset(mesh):
-        mesh = pv.wrap(mesh)
-    if density is None:
-        density = mesh.length / 100
-    if isinstance(density, (int, float, np.number)):
-        density_x, density_y, density_z = [density] * 3
-    elif isinstance(density, (collections.abc.Sequence, np.ndarray)):
-        density_x, density_y, density_z = density
-    else:
-        raise TypeError(f'Invalid density {density!r}, expected number or array-like.')
-
-    # check and pre-process input mesh
-    surface = mesh.extract_geometry()  # filter preserves topology
-    if not surface.faces.size:
-        # we have a point cloud or an empty mesh
-        raise ValueError('Input mesh must have faces for voxelization.')
-    if not surface.is_all_triangles:
-        # reduce chance for artifacts, see gh-1743
-        surface.triangulate(inplace=True)
-
-    x_min, x_max, y_min, y_max, z_min, z_max = mesh.bounds
-    x = np.arange(x_min, x_max, density_x)
-    y = np.arange(y_min, y_max, density_y)
-    z = np.arange(z_min, z_max, density_z)
-    x, y, z = np.meshgrid(x, y, z)
-
-    # Create unstructured grid from the structured grid
-    grid = pv.StructuredGrid(x, y, z)
-    ugrid = pv.UnstructuredGrid(grid)
-
-    # get part of the mesh within the mesh's bounding surface.
-    selection = ugrid.select_enclosed_points(surface, tolerance=0.0, check_surface=check_surface)
-    mask = selection.point_data['SelectedPoints'].view(np.bool_)
-
-    # extract cells from point indices
-    vox = ugrid.extract_points(mask)
-    return vox
+#     return mask
 
 def voxelize(
-    surface: pv.PolyData,
+    mesh: pv.PolyData,
     density: float = 0.2,
     bounds: Optional[List[float]] = None,
 ) -> Tuple[np.ndarray, geo.FrameTransform]:
@@ -115,7 +46,7 @@ def voxelize(
         Tuple[np.ndarray, geo.FrameTransform]: The voxelized segmentation of the surface as np.uint8 and the associated world_from_ijk transform.
     """
     density = listify(density, 3)
-    voxels = voxelize_inner(surface, density=density, check_surface=False)
+    density_x, density_y, density_z = density
 
     spacing = np.array(density)
     if bounds is None:
@@ -125,20 +56,39 @@ def voxelize(
     size = np.array([(x_max - x_min), (y_max - y_min), (z_max - z_min)])
     if np.any(size) < 0:
         raise ValueError(f"invalid bounds: {bounds}")
-    x, y, z = np.ceil(size / spacing).astype(int) + 1
+    x_a, y_a, z_a = np.ceil(size / spacing).astype(int) + 1
     origin = np.array([x_min, y_min, z_min])
     world_from_ijk = geo.FrameTransform.from_rt(np.diag(spacing), origin)
-    ijk_from_world = world_from_ijk.inv
 
-    data = np.zeros((x, y, z), dtype=np.uint8)
-    vectors = np.array(voxels.points)
-    A_h = np.hstack((vectors, np.ones((vectors.shape[0], 1))))
-    transform = np.array(ijk_from_world)
-    B = (transform @ A_h.T).T[:, :3]
-    B = np.round(B).astype(int)
-    data[B[:, 0], B[:, 1], B[:, 2]] = 1
+    # check and pre-process input mesh
+    surface = mesh.extract_geometry()  # filter preserves topology
+    if not surface.faces.size:
+        # we have a point cloud or an empty mesh
+        raise ValueError('Input mesh must have faces for voxelization.')
+    if not surface.is_all_triangles:
+        # reduce chance for artifacts, see gh-1743
+        surface.triangulate(inplace=True)
 
-    return data, world_from_ijk
+    x_min, x_max, y_min, y_max, z_min, z_max = bounds
+    x_b = np.arange(x_min, x_max, density_x)
+    y_b = np.arange(y_min, y_max, density_y)
+    z_b = np.arange(z_min, z_max, density_z)
+    x, y, z = np.meshgrid(x_b, y_b, z_b, indexing='ij')
+
+    grid = pv.PointSet(np.c_[x.ravel(), y.ravel(), z.ravel()])
+
+    selection = grid.select_enclosed_points(surface, tolerance=0.0, check_surface=False)
+    voxels = selection.point_data['SelectedPoints'].reshape(x.shape)
+
+    # data = np.zeros((x, y, z), dtype=np.uint8)
+    # vectors = np.array(voxels.points)
+    # A_h = np.hstack((vectors, np.ones((vectors.shape[0], 1))))
+    # transform = np.array(ijk_from_world)
+    # B = (transform @ A_h.T).T[:, :3]
+    # B = np.round(B).astype(int)
+    # data[B[:, 0], B[:, 1], B[:, 2]] = 1
+
+    return voxels, world_from_ijk
 
 
 _default_densities = {
@@ -149,11 +99,15 @@ _default_densities = {
     "bone": 1.5,
 }
 
+asdf = False
+
 def from_meshes(
     voxel_size: float = 0.1,
     world_from_anatomical: Optional[geo.FrameTransform] = None,
     surfaces: List[Tuple[str, float, pv.PolyData]] = [], # material, density, surface
 ):
+    global asdf
+    asdf = not asdf
 
     bounds = []
     for material, density, surface in surfaces:
@@ -176,11 +130,25 @@ def from_meshes(
 
     segmentations = []
     for material, density, surface in surfaces:
-        segmentation, anatomical_from_ijk = voxelize(
-            surface,
-            density=voxel_size,
-            bounds=bounds,
-        )
+        if asdf:
+            start = time.time()
+            for i in range(10):
+                segmentation, anatomical_from_ijk = voxelize(
+                    surface,
+                    density=voxel_size,
+                    bounds=bounds,
+                )
+            print(f"new: {time.time() - start}")
+        else:
+            start = time.time()
+            for i in range(10):
+                old_segmentation, old_anatomical_from_ijk = deepdrr.utils.mesh_utils.voxelize(
+                    surface,
+                    density=voxel_size,
+                    bounds=bounds,
+                )
+            segmentation, anatomical_from_ijk = old_segmentation, old_anatomical_from_ijk
+            print(f"old: {time.time() - start}")
         segmentations.append(segmentation)
 
     material_segmentations = defaultdict(list)

@@ -12,7 +12,8 @@ dependencies:
   - pycuda
   - pip
   - pip:
-      - deepdrr==1.1.2
+      - git+https://github.com/arcadelab/deepdrr.git@dev
+      # - deepdrr==1.1.2
       - pyzmq
       - pycapnp
       - typer

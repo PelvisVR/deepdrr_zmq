@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "module": "deepdrrzmq.deepdrrd",
-            "justMyCode": true
+            "justMyCode": false
         }
     ]
 }
