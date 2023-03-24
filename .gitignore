@@ -6,7 +6,7 @@ deepdrr/model_segmentation.pth.tar
 dist
 build
 docs/build
-.vscode
+# .vscode
 **flycheck*.py
 /.DS_Store
 output
