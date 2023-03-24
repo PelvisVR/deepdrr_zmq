@@ -25,10 +25,6 @@ from collections import defaultdict
 log = logging.getLogger(__name__)
 
 
-# def voxelize_inner(mesh, bounds, density=None, check_surface=True):
-
-#     return mask
-
 def voxelize(
     mesh: pv.PolyData,
     density: float = 0.2,
@@ -80,14 +76,6 @@ def voxelize(
     selection = grid.select_enclosed_points(surface, tolerance=0.0, check_surface=False)
     voxels = selection.point_data['SelectedPoints'].reshape(x.shape)
 
-    # data = np.zeros((x, y, z), dtype=np.uint8)
-    # vectors = np.array(voxels.points)
-    # A_h = np.hstack((vectors, np.ones((vectors.shape[0], 1))))
-    # transform = np.array(ijk_from_world)
-    # B = (transform @ A_h.T).T[:, :3]
-    # B = np.round(B).astype(int)
-    # data[B[:, 0], B[:, 1], B[:, 2]] = 1
-
     return voxels, world_from_ijk
 
 
@@ -99,16 +87,11 @@ _default_densities = {
     "bone": 1.5,
 }
 
-asdf = False
-
 def from_meshes(
     voxel_size: float = 0.1,
     world_from_anatomical: Optional[geo.FrameTransform] = None,
     surfaces: List[Tuple[str, float, pv.PolyData]] = [], # material, density, surface
 ):
-    global asdf
-    asdf = not asdf
-
     bounds = []
     for material, density, surface in surfaces:
         bounds.append(surface.bounds)
@@ -130,25 +113,11 @@ def from_meshes(
 
     segmentations = []
     for material, density, surface in surfaces:
-        if asdf:
-            start = time.time()
-            for i in range(10):
-                segmentation, anatomical_from_ijk = voxelize(
-                    surface,
-                    density=voxel_size,
-                    bounds=bounds,
-                )
-            print(f"new: {time.time() - start}")
-        else:
-            start = time.time()
-            for i in range(10):
-                old_segmentation, old_anatomical_from_ijk = deepdrr.utils.mesh_utils.voxelize(
-                    surface,
-                    density=voxel_size,
-                    bounds=bounds,
-                )
-            segmentation, anatomical_from_ijk = old_segmentation, old_anatomical_from_ijk
-            print(f"old: {time.time() - start}")
+        segmentation, anatomical_from_ijk = voxelize(
+            surface,
+            density=voxel_size,
+            bounds=bounds,
+        )
         segmentations.append(segmentation)
 
     material_segmentations = defaultdict(list)
