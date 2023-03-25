@@ -53,31 +53,23 @@ def voxelize(
         bounds = surface.bounds
 
     x_min, x_max, y_min, y_max, z_min, z_max = bounds
-    size = np.array([(x_max - x_min), (y_max - y_min), (z_max - z_min)])
-    if np.any(size) < 0:
-        raise ValueError(f"invalid bounds: {bounds}")
-    x_a, y_a, z_a = np.ceil(size / spacing).astype(int) + 1
     origin = np.array([x_min, y_min, z_min])
     world_from_ijk = geo.FrameTransform.from_rt(np.diag(spacing), origin)
 
-    # TODO: Everything above only needs to run once
-
-    # check and pre-process input mesh
-    surface = mesh.extract_geometry()  # filter preserves topology
-    if not surface.faces.size:
-        # we have a point cloud or an empty mesh
-        raise ValueError('Input mesh must have faces for voxelization.')
-    if not surface.is_all_triangles:
-        # reduce chance for artifacts, see gh-1743
-        surface.triangulate(inplace=True)
-
-    x_min, x_max, y_min, y_max, z_min, z_max = bounds
     x_b = np.arange(x_min, x_max, density_x)
     y_b = np.arange(y_min, y_max, density_y)
     z_b = np.arange(z_min, z_max, density_z)
     x, y, z = np.meshgrid(x_b, y_b, z_b, indexing='ij')
 
     grid = pv.PointSet(np.c_[x.ravel(), y.ravel(), z.ravel()])
+
+    # TODO: Everything above only needs to run once
+
+    # check and pre-process input mesh
+    surface = mesh.extract_geometry()  # filter preserves topology
+    if not surface.is_all_triangles:
+        # reduce chance for artifacts, see gh-1743
+        surface.triangulate(inplace=True)
 
     selection = grid.select_enclosed_points(surface, tolerance=0.0, check_surface=False)
     voxels = selection.point_data['SelectedPoints'].reshape(x.shape)
