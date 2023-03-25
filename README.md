@@ -26,12 +26,12 @@ ZMQ/Capnp interface for [DeepDRR](https://github.com/arcadelab/deepdrr).
 - [x] Docker container
 - [x] Heartbeat watchdog
 - [x] Faster mesh voxelization
+- [x] Proxy
+- [ ] Patient loader 
 - [ ] Auto cache cleanup
 - [ ] NIFTI cache invalidation
 - [ ] Power save mode and auto shutdown after idle
 - [ ] Faster decode
-- [ ] Patient loader
-- [ ] Proxy
 
 
 ## Questions

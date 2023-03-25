@@ -126,8 +126,10 @@ class DeepDRRServer:
         pub_socket = self.context.socket(zmq.PUB)
         pub_socket.hwm = 2
 
-        pub_socket.bind(f"tcp://*:{self.pub_port}")
-        sub_socket.bind(f"tcp://*:{self.sub_port}")
+        # pub_socket.bind(f"tcp://*:{self.pub_port}")
+        # sub_socket.bind(f"tcp://*:{self.sub_port}")
+        pub_socket.connect(f"tcp://localhost:{self.pub_port}")
+        sub_socket.connect(f"tcp://localhost:{self.sub_port}")
 
         sub_socket.setsockopt(zmq.SUBSCRIBE, b"")
 
