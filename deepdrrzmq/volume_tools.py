@@ -26,62 +26,6 @@ from deepdrr.projector.material_coefficients import material_coefficients
 from collections import defaultdict
 
 
-log = logging.getLogger(__name__)
-
-
-def voxelize(
-    mesh: pv.PolyData,
-    density: float = 0.2,
-    bounds: Optional[List[float]] = None,
-) -> Tuple[np.ndarray, geo.FrameTransform]:
-    """Voxelize the surface mesh with the given density.
-
-    Args:
-        surface (pv.PolyData): The surface.
-        density (Union[float, Tuple[float, float, float]]): Either a single float or a
-            list of floats giving the size of a voxel in x, y, z.
-            (This is really a spacing, but it's misnamed in pyvista.)
-
-    Returns:
-        Tuple[np.ndarray, geo.FrameTransform]: The voxelized segmentation of the surface as np.uint8 and the associated world_from_ijk transform.
-    """
-    density = listify(density, 3)
-    density_x, density_y, density_z = density
-
-    spacing = np.array(density)
-    if bounds is None:
-        bounds = surface.bounds
-
-    x_min, x_max, y_min, y_max, z_min, z_max = bounds
-    origin = np.array([x_min, y_min, z_min])
-    world_from_ijk = geo.FrameTransform.from_rt(np.diag(spacing), origin)
-
-    x_b = np.arange(x_min, x_max, density_x)
-    y_b = np.arange(y_min, y_max, density_y)
-    z_b = np.arange(z_min, z_max, density_z)
-    x, y, z = np.meshgrid(x_b, y_b, z_b, indexing='ij')
-
-    grid = pv.PointSet(np.c_[x.ravel(), y.ravel(), z.ravel()])
-
-    # TODO: Everything above only needs to run once
-
-    # check and pre-process input mesh
-    surface = mesh.extract_geometry()  # filter preserves topology
-    if not surface.is_all_triangles:
-        # reduce chance for artifacts, see gh-1743
-        surface.triangulate(inplace=True)
-
-    selection = grid.select_enclosed_points(surface, tolerance=0.0, check_surface=False)
-    voxels = selection.point_data['SelectedPoints'].reshape(x.shape)
-
-    kernlen = 3
-    kern3d = np.ones((kernlen, kernlen, kernlen))
-    voxels = scipy.signal.convolve(voxels, kern3d, mode='same')
-    voxels = voxels > 0.5
-
-    return voxels, world_from_ijk
-
-
 _default_densities = {
     "polyethylene": 1.05,  # polyethyelene is 0.97, but ABS plastic is 1.05
     "concrete": 1.5,
@@ -89,6 +33,27 @@ _default_densities = {
     "titanium": 7,
     "bone": 1.5,
 }
+
+def voxelize_on_grid(
+    mesh: pv.PolyData,
+    grid: pv.PointSet,
+    shape: Tuple[int, int, int],
+) -> Tuple[np.ndarray, geo.FrameTransform]:
+
+    surface = mesh.extract_geometry()  # filter preserves topology
+    if not surface.is_all_triangles:
+        # reduce chance for artifacts, see gh-1743
+        surface.triangulate(inplace=True)
+
+    selection = grid.select_enclosed_points(surface, tolerance=0.0, check_surface=False)
+    voxels = selection.point_data['SelectedPoints'].reshape(shape)
+
+    kernlen = 3
+    kern3d = np.ones((kernlen, kernlen, kernlen))
+    voxels = scipy.signal.convolve(voxels, kern3d, mode='same')
+    voxels = voxels > 0.5
+
+    return voxels
 
 def from_meshes(
     voxel_size: float = 0.1,
@@ -114,14 +79,27 @@ def from_meshes(
         combined_surfaces.append((surfaces[0][0], surfaces[0][1], sum([s[2] for s in surfaces], pv.PolyData())))
     surfaces = combined_surfaces
 
+    voxel_size = listify(voxel_size, 3)
+    density_x, density_y, density_z = voxel_size
+
+    spacing = np.array(voxel_size)
+    if bounds is None:
+        bounds = surface.bounds
+
+    x_min, x_max, y_min, y_max, z_min, z_max = bounds
+    origin = np.array([x_min, y_min, z_min])
+    anatomical_from_ijk = geo.FrameTransform.from_rt(np.diag(spacing), origin)
+
+    x_b = np.arange(x_min, x_max, density_x)
+    y_b = np.arange(y_min, y_max, density_y)
+    z_b = np.arange(z_min, z_max, density_z)
+    x, y, z = np.meshgrid(x_b, y_b, z_b, indexing='ij')
+
+    grid = pv.PointSet(np.c_[x.ravel(), y.ravel(), z.ravel()])
+
     segmentations = []
     for material, density, surface in surfaces:
-        segmentation, anatomical_from_ijk = voxelize(
-            surface,
-            density=voxel_size,
-            bounds=bounds,
-        )
-        segmentations.append(segmentation)
+        segmentations.append(voxelize_on_grid(surface, grid, x.shape))
 
     material_segmentations = defaultdict(list)
     for (material, _, _), segmentation in zip(surfaces, segmentations):
