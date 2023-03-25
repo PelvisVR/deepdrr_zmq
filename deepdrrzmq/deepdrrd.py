@@ -347,8 +347,7 @@ class DeepDRRServer:
 
             for i, raw_image in enumerate(raw_images):
                 # use jpeg compression
-                pil_img = Image.fromarray((raw_image * 255).astype(np.uint8))
-                # pil_img = Image.fromarray((255 - (raw_image * 255)).astype(np.uint8))
+                pil_img = Image.fromarray(((1-raw_image) * 255).astype(np.uint8))
                 buffer = io.BytesIO()
                 pil_img.save(buffer, format="JPEG")
 
