@@ -131,3 +131,13 @@ struct ProjectorParamsResponse {
 struct ProjectorParamsRequest {
     projectorId @0 :Text; # Unique projector id
 }
+
+struct MeshRequest {
+    meshId @0 :Text; # Unique mesh id
+}
+
+struct MeshResponse {
+    meshId @0 :Text; # Unique mesh id
+    status @1 :StatusResponse; # Status of the request
+    mesh @2 :Mesh; # Mesh
+}

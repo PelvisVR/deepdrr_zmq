@@ -131,7 +131,8 @@ class DeepDRRServer:
         pub_socket.connect(f"tcp://localhost:{self.pub_port}")
         sub_socket.connect(f"tcp://localhost:{self.sub_port}")
 
-        sub_socket.setsockopt(zmq.SUBSCRIBE, b"")
+        sub_socket.setsockopt(zmq.SUBSCRIBE, b"project_request/")
+        sub_socket.setsockopt(zmq.SUBSCRIBE, b"projector_params_response/")
 
         while True:
             try:
