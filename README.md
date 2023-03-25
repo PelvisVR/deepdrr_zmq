@@ -23,13 +23,15 @@ ZMQ/Capnp interface for [DeepDRR](https://github.com/arcadelab/deepdrr).
 - [x] Allow recreate projector
 - [x] Cache volumes
 - [x] Manager
-- [ ] Docker container
-- [ ] Heartbeat watchdog
-- [ ] Proxy
-- [ ] Faster decode
+- [x] Docker container
+- [x] Heartbeat watchdog
+- [x] Faster mesh voxelization
 - [ ] Auto cache cleanup
-- [ ] Faster mesh voxelization
 - [ ] Power save mode and auto shutdown after idle
+- [ ] Faster decode
+- [ ] Patient loader
+- [ ] Proxy
+
 
 ## Questions
 - Does deepdrr support volume instancing?
