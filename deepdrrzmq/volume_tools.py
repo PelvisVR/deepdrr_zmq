@@ -10,6 +10,10 @@ from typing import Optional
 from typing import Tuple
 
 import numpy as np
+import scipy
+import scipy.stats as st
+
+import numpy as np
 import pyvista as pv
 from deepdrr import geo
 import deepdrr
@@ -73,8 +77,41 @@ def voxelize(
 
     grid = pv.PointSet(np.c_[x.ravel(), y.ravel(), z.ravel()])
 
+    # surface = surface.copy()
+    # surface.compute_normals(inplace=True, cell_normals=False, split_vertices=True)
+    # surface.set_active_scalars('Normals')
+    # surface.warp_by_scalar(factor=0.5, inplace=True)
+
     selection = grid.select_enclosed_points(surface, tolerance=0.0, check_surface=False)
     voxels = selection.point_data['SelectedPoints'].reshape(x.shape)
+
+
+    def gkern(kernlen=21, nsig=3):
+        x = np.linspace(-nsig, nsig, kernlen+1)
+        kern1d = np.diff(st.norm.cdf(x))
+        kern3d = np.einsum('i,j,k->ijk', kern1d, kern1d, kern1d)
+        return kern3d/kern3d.sum()
+    
+    kernlen = 3
+
+    # kern3d = gkern(5, 3)
+
+    # make a 3d sphere kernel
+    # kern3d = np.zeros((kernlen, kernlen, kernlen))
+    # for i in range(kernlen):
+    #     for j in range(kernlen):
+    #         for k in range(kernlen):
+    #             if (i - kernlen//2)**2 + (j - kernlen//2)**2 + (k - kernlen//2)**2 < (kernlen//2)**2:
+    #                 kern3d[i, j, k] = 1
+    kern3d = np.ones((kernlen, kernlen, kernlen))
+
+    # multiply by the max
+    # kern3d *= 1 / kern3d.max()
+    voxels = scipy.signal.convolve(voxels, kern3d, mode='same')
+    # clip to 0 and 1
+    voxels = np.clip(voxels, 0, 1)
+    # round to 0 and 1
+    voxels = np.round(voxels)
 
     return voxels, world_from_ijk
 

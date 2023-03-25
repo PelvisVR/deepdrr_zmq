@@ -27,6 +27,7 @@ ZMQ/Capnp interface for [DeepDRR](https://github.com/arcadelab/deepdrr).
 - [x] Heartbeat watchdog
 - [x] Faster mesh voxelization
 - [ ] Auto cache cleanup
+- [ ] NIFTI cache invalidation
 - [ ] Power save mode and auto shutdown after idle
 - [ ] Faster decode
 - [ ] Patient loader
