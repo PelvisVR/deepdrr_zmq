@@ -282,6 +282,22 @@ class DeepDRRServer:
         with messages.ProjectRequest.from_bytes(data) as request:
             # print(f"received project request: {request.requestId} for projector {request.projectorId}")
             if self.projector is None or request.projectorId != self.projector_id:
+                msg = messages.ProjectResponse.new_message()
+                msg.requestId = request.requestId
+                msg.projectorId = request.projectorId
+                msg.status = make_response(0, "ok")
+
+                msg.init("images", 1)
+
+                green_loading_img = np.zeros((512, 512, 3), dtype=np.uint8)
+                green_loading_img[:, :, 1] = 255
+                pil_img = Image.fromarray(green_loading_img)
+                buffer = io.BytesIO()
+                pil_img.save(buffer, format="JPEG")
+                msg.images[0].data = buffer.getvalue()
+                await pub_socket.send_multipart([b"project_response/", msg.to_bytes()])
+
+
                 msg = messages.ProjectorParamsRequest.new_message()
                 msg.projectorId = request.projectorId
                 await pub_socket.send_multipart([b"projector_params_request/", msg.to_bytes()])
@@ -332,6 +348,7 @@ class DeepDRRServer:
             for i, raw_image in enumerate(raw_images):
                 # use jpeg compression
                 pil_img = Image.fromarray((raw_image * 255).astype(np.uint8))
+                # pil_img = Image.fromarray((255 - (raw_image * 255)).astype(np.uint8))
                 buffer = io.BytesIO()
                 pil_img.save(buffer, format="JPEG")
 
