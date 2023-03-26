@@ -86,7 +86,7 @@ class PatientLoaderServer:
 
     async def project_server(self):
         sub_socket = self.context.socket(zmq.SUB)
-        sub_socket.hwm = 2
+        sub_socket.hwm = 1000
 
         pub_socket = self.context.socket(zmq.PUB)
         pub_socket.hwm = 2
@@ -103,12 +103,12 @@ class PatientLoaderServer:
                 topic, data = await sub_socket.recv_multipart()
                 latest_msgs[topic] = data
 
-                try:
-                    for i in range(1000):
-                        topic, data = await sub_socket.recv_multipart(flags=zmq.NOBLOCK)
-                        latest_msgs[topic] = data
-                except zmq.ZMQError:
-                    pass
+                # try:
+                #     for i in range(1000):
+                #         topic, data = await sub_socket.recv_multipart(flags=zmq.NOBLOCK)
+                #         latest_msgs[topic] = data
+                # except zmq.ZMQError:
+                #     pass
 
                 for topic, data in latest_msgs.items():
                     if topic == b"patient_mesh_request/":
@@ -127,6 +127,7 @@ class PatientLoaderServer:
 
     async def handle_patient_mesh_request(self, pub_socket, data):
         with messages.MeshRequest.from_bytes(data) as request:
+            print(f"patient_mesh_request: {request.meshId}")
 
             meshId = request.meshId
 
@@ -138,9 +139,13 @@ class PatientLoaderServer:
             msg.meshId = meshId
             msg.status = make_response(0, "ok")
             msg.mesh.vertices = mesh.points.flatten().tolist()
-            msg.mesh.faces = mesh.faces.flatten().tolist()
+            # todo: flip winding order on client side, not server
+            msg.mesh.faces = mesh.faces.reshape((-1, 4))[..., 1:][..., [0, 2, 1]].flatten().tolist()
 
-            await pub_socket.send_multipart([b"patient_mesh_response/", msg.to_bytes()])
+            response_topic = "patient_mesh_response/"+meshId
+
+            await pub_socket.send_multipart([response_topic.encode(), msg.to_bytes()])
+            print(f"sent mesh response {response_topic}")
 
 
 @app.command()
