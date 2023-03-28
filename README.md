@@ -32,7 +32,10 @@ ZMQ/Capnp interface for [DeepDRR](https://github.com/arcadelab/deepdrr).
 - [ ] NIFTI cache invalidation
 - [ ] Power save mode and auto shutdown after idle
 - [ ] Faster decode
+- [ ] Better cache invalidation with modification time
 
 
 ## Questions
 - Does deepdrr support volume instancing?
+- Does deepdrr support enabling/disabling volumes without recreating the projector?
+- Code used for creating smooth capped meshes?
