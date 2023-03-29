@@ -97,27 +97,8 @@ class DeepDRRServer:
         logging.info(f"patient data dir: {self.patient_data_dir}")
 
     async def start(self):
-        # control = self.control_server()
         project = self.project_server()
         await asyncio.gather(project)
-        # await asyncio.gather(control, project)
-
-    # async def control_server(self):
-    #     rep_socket = self.context.socket(zmq.REP)
-    #     rep_socket.hwm = 2
-
-    #     rep_socket.bind(f"tcp://*:{self.rep_port}")
-
-    #     while True:
-    #         try:
-    #             msg = await rep_socket.recv_multipart()
-    #             print(f"received: {msg}")
-                
-    #         except DeepDRRServerException as e:
-    #             await rep_socket.send_multipart([e.status_response().to_bytes()])
-    #         except Exception as e:
-    #             print(f"exception: {e}")
-    #             await rep_socket.send_multipart([make_response(1, str(e)).to_bytes()])
 
     async def project_server(self):
         sub_socket = self.context.socket(zmq.SUB)
@@ -126,8 +107,6 @@ class DeepDRRServer:
         pub_socket = self.context.socket(zmq.PUB)
         pub_socket.hwm = 2
 
-        # pub_socket.bind(f"tcp://*:{self.pub_port}")
-        # sub_socket.bind(f"tcp://*:{self.sub_port}")
         pub_socket.connect(f"tcp://localhost:{self.pub_port}")
         sub_socket.connect(f"tcp://localhost:{self.sub_port}")
 
@@ -201,27 +180,9 @@ class DeepDRRServer:
                         segmentation=niftiParams.segmentation,
                         # density_kwargs=None,
                     )
-                    self.volumes.append(
-                        niftiVolume
-                    )
+                    self.volumes.append(niftiVolume)
                 elif volumeParams.which() == "instrument":
-                    instrumentParams = volumeParams.instrument
-                    known_instruments = {
-                        # "KWire300mm": lambda: KWire300mm(
-                        #     density=instrumentParams.density,
-                        #     world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
-                        # ),
-                        # "KWire450mm": lambda: KWire450mm(
-                        #     density=instrumentParams.density,
-                        #     world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
-                        # ),
-                    }
-                    if instrumentParams.type not in known_instruments:
-                        raise DeepDRRServerException(1, f"unknown instrument: {instrumentParams.type}")
-                    instrumentVolume = known_instruments[instrumentParams.type]()
-                    self.volumes.append(
-                        instrumentVolume
-                    )
+                    raise DeepDRRServerException(1, f"Instruments deprecated, use meshes instead")
                 elif volumeParams.which() == "mesh":
                     meshParams = volumeParams.mesh
                     surfaces = []
@@ -237,11 +198,9 @@ class DeepDRRServer:
 
                     meshVolume = from_meshes_cached(
                         voxel_size=meshParams.voxelSize,
-                        surfaces=surfaces # List[Tuple[str, float, pv.PolyData]] = [], # material, density, surface
+                        surfaces=surfaces
                     )
-                    self.volumes.append(
-                        meshVolume
-                    )
+                    self.volumes.append(meshVolume)
                 else:
                     raise DeepDRRServerException(1, f"unknown volume type: {volumeParams.which()}")
             
@@ -357,7 +316,6 @@ class DeepDRRServer:
                 msg.images[i].data = buffer.getvalue()
 
             await pub_socket.send_multipart([b"project_response/", msg.to_bytes()])
-            # print(f"sent images response!")
 
             return True
     

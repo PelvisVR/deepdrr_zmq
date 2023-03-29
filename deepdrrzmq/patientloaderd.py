@@ -89,7 +89,7 @@ class PatientLoaderServer:
         sub_socket.hwm = 1000
 
         pub_socket = self.context.socket(zmq.PUB)
-        pub_socket.hwm = 2
+        pub_socket.hwm = 1000
 
         pub_socket.connect(f"tcp://localhost:{self.pub_port}")
         sub_socket.connect(f"tcp://localhost:{self.sub_port}")
