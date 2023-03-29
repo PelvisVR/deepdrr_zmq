@@ -86,10 +86,10 @@ class PatientLoaderServer:
 
     async def project_server(self):
         sub_socket = self.context.socket(zmq.SUB)
-        sub_socket.hwm = 1000
+        sub_socket.hwm = 10000
 
         pub_socket = self.context.socket(zmq.PUB)
-        pub_socket.hwm = 1000
+        pub_socket.hwm = 10000
 
         pub_socket.connect(f"tcp://localhost:{self.pub_port}")
         sub_socket.connect(f"tcp://localhost:{self.sub_port}")

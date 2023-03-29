@@ -40,9 +40,8 @@ def voxelize_on_grid(
     shape: Tuple[int, int, int],
 ) -> Tuple[np.ndarray, geo.FrameTransform]:
 
-    surface = mesh.extract_geometry()  # filter preserves topology
+    surface = mesh.extract_geometry()
     if not surface.is_all_triangles:
-        # reduce chance for artifacts, see gh-1743
         surface.triangulate(inplace=True)
 
     selection = grid.select_enclosed_points(surface, tolerance=0.0, check_surface=False)
