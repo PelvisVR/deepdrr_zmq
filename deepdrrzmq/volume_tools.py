@@ -38,7 +38,7 @@ def voxelize_on_grid(
     mesh: pv.PolyData,
     grid: pv.PointSet,
     shape: Tuple[int, int, int],
-) -> Tuple[np.ndarray, geo.FrameTransform]:
+) -> np.ndarray:
 
     surface = mesh.extract_geometry()
     if not surface.is_all_triangles:
@@ -54,19 +54,39 @@ def voxelize_on_grid(
 
     return voxels
 
-def from_meshes(
-    voxel_size: float = 0.1,
-    world_from_anatomical: Optional[geo.FrameTransform] = None,
-    surfaces: List[Tuple[str, float, pv.PolyData]] = [], # material, density, surface
-):
-    bounds = []
-    for material, density, surface in surfaces:
-        bounds.append(surface.bounds)
 
-    bounds = np.array(bounds)
-    x_min, y_min, z_min = bounds[:, [0, 2, 4]].min(0)
-    x_max, y_max, z_max = bounds[:, [1, 3, 5]].max(0)
-    bounds = [x_min, x_max, y_min, y_max, z_min, z_max]
+def empty_volume():
+    return Volume(np.array(), dict())
+
+
+
+def voxelize(
+    surface: pv.PolyData,
+    density: float = 0.2,
+    bounds: Optional[List[float]] = None,
+) -> Tuple[np.ndarray, geo.FrameTransform]:
+    volume_args = voxelize_multisurface(voxel_size=density, surfaces=[("polyethylene", 0, surface)], bounds=bounds)
+    return volume_args["data"], volume_args["anatomical_from_IJK"]
+
+
+def voxelize_multisurface(
+    voxel_size: float = 0.1,
+    surfaces: List[Tuple[str, float, pv.PolyData]] = [], # material, density, surface
+    bounds: Optional[List[float]] = None,
+):
+    if len(surfaces) == 0:
+        return empty_volume()
+    
+    if bounds is None:
+        bounds = []
+        for material, density, surface in surfaces:
+            bounds.append(surface.bounds)
+
+        bounds = np.array(bounds)
+        x_min, y_min, z_min = bounds[:, [0, 2, 4]].min(0)
+        x_max, y_max, z_max = bounds[:, [1, 3, 5]].max(0)
+    else:
+        x_min, y_min, z_min, x_max, y_max, z_max = bounds
 
     # combine surfaces wiht same material and approx same density
     surface_dict = defaultdict(list)
@@ -82,10 +102,7 @@ def from_meshes(
     density_x, density_y, density_z = voxel_size
 
     spacing = np.array(voxel_size)
-    if bounds is None:
-        bounds = surface.bounds
 
-    x_min, x_max, y_min, y_max, z_min, z_max = bounds
     origin = np.array([x_min, y_min, z_min])
     anatomical_from_ijk = geo.FrameTransform.from_rt(np.diag(spacing), origin)
 
@@ -117,10 +134,25 @@ def from_meshes(
             density = _default_densities[material]
         data += segmentation * density
 
-    return Volume(
-        data,
-        material_segmentations_combined,
-        anatomical_from_ijk,
-        world_from_anatomical,
-        anatomical_coordinate_system=None,
+    return kwargs_to_dict(
+        data=data,
+        materials=material_segmentations_combined,
+        anatomical_from_IJK=anatomical_from_ijk,
     )
+
+
+def from_meshes(
+    voxel_size: float = 0.1,
+    world_from_anatomical: Optional[geo.FrameTransform] = None,
+    surfaces: List[Tuple[str, float, pv.PolyData]] = [], # material, density, surface
+):
+    volume_args = voxelize_multisurface(voxel_size=voxel_size, surfaces=surfaces)
+    return Volume(
+        world_from_anatomical=world_from_anatomical,
+        anatomical_coordinate_system=None,
+        **volume_args,
+    )
+
+
+def kwargs_to_dict(**kwargs):
+    return kwargs
