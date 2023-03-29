@@ -47,6 +47,43 @@ def make_response(code, message):
     response.message = message
     return response
 
+def mesh_msg_to_volume(meshParams):
+    surfaces = []
+    for volumeMesh in meshParams.meshes:
+        vertices = np.array(volumeMesh.mesh.vertices).reshape(-1, 3)
+        faces = np.array(volumeMesh.mesh.faces).reshape(-1, 3)
+        faces = np.pad(faces, ((0, 0), (1, 0)), constant_values=3)
+        faces = faces.flatten()
+        if len(faces) == 0:
+            continue
+        surface = pv.PolyData(vertices, faces)
+        surfaces.append((volumeMesh.material, volumeMesh.density, surface))
+
+    meshVolume = from_meshes_cached(
+        voxel_size=meshParams.voxelSize,
+        surfaces=surfaces
+    )
+    return meshVolume
+
+def nifti_msg_to_volume(niftiParams, patient_data_dir):
+    # if niftiParams.path is a relative path, make it relative to the patient data directory
+    if not Path(niftiParams.path).expanduser().is_absolute():
+        niftiPath = str(patient_data_dir / niftiParams.path)
+    else:
+        niftiPath = niftiParams.path
+
+    niftiVolume = from_nifti_cached(
+        path=niftiPath,
+        world_from_anatomical=capnp_square_matrix(niftiParams.worldFromAnatomical),
+        use_thresholding=niftiParams.useThresholding,
+        use_cached=niftiParams.useCached,
+        save_cache=niftiParams.saveCache,
+        cache_dir=capnp_optional(niftiParams.cacheDir),
+        # materials=None,
+        segmentation=niftiParams.segmentation,
+        # density_kwargs=None,
+    )
+    return niftiVolume
 
 class DeepDRRServerException(Exception):
     def __init__(self, code, message):
@@ -161,46 +198,11 @@ class DeepDRRServer:
             for volumeParams in projectorParams.volumes:
                 print(f"adding {volumeParams.which()} volume")
                 if volumeParams.which() == "nifti":
-                    niftiParams = volumeParams.nifti
-
-                    # if niftiParams.path is a relative path, make it relative to the patient data directory
-                    if not Path(niftiParams.path).expanduser().is_absolute():
-                        niftiPath = str(self.patient_data_dir / niftiParams.path)
-                    else:
-                        niftiPath = niftiParams.path
-
-                    niftiVolume = from_nifti_cached(
-                        path=niftiPath,
-                        world_from_anatomical=capnp_square_matrix(niftiParams.worldFromAnatomical),
-                        use_thresholding=niftiParams.useThresholding,
-                        use_cached=niftiParams.useCached,
-                        save_cache=niftiParams.saveCache,
-                        cache_dir=capnp_optional(niftiParams.cacheDir),
-                        # materials=None,
-                        segmentation=niftiParams.segmentation,
-                        # density_kwargs=None,
-                    )
-                    self.volumes.append(niftiVolume)
+                    self.volumes.append(nifti_msg_to_volume(volumeParams.nifti, self.patient_data_dir))
+                elif volumeParams.which() == "mesh":
+                    self.volumes.append(mesh_msg_to_volume(volumeParams.mesh))
                 elif volumeParams.which() == "instrument":
                     raise DeepDRRServerException(1, f"Instruments deprecated, use meshes instead")
-                elif volumeParams.which() == "mesh":
-                    meshParams = volumeParams.mesh
-                    surfaces = []
-                    for volumeMesh in meshParams.meshes:
-                        vertices = np.array(volumeMesh.mesh.vertices).reshape(-1, 3)
-                        faces = np.array(volumeMesh.mesh.faces).reshape(-1, 3)
-                        faces = np.pad(faces, ((0, 0), (1, 0)), constant_values=3)
-                        faces = faces.flatten()
-                        if len(faces) == 0:
-                            continue
-                        surface = pv.PolyData(vertices, faces)
-                        surfaces.append((volumeMesh.material, volumeMesh.density, surface))
-
-                    meshVolume = from_meshes_cached(
-                        voxel_size=meshParams.voxelSize,
-                        surfaces=surfaces
-                    )
-                    self.volumes.append(meshVolume)
                 else:
                     raise DeepDRRServerException(1, f"unknown volume type: {volumeParams.which()}")
             
