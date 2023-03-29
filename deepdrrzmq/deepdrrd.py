@@ -27,7 +27,7 @@ from deepdrr.projector import Projector
 from deepdrrzmq.utils import timer_util
 
 from deepdrrzmq.devices import SimpleDevice
-from deepdrrzmq.utils.zmq_util import zmq_no_linger_context
+from deepdrrzmq.utils.zmq_util import zmq_no_linger_context, zmq_poll_latest
 
 from .utils.drr_util import from_nifti_cached, from_meshes_cached
 from .utils.typer_util import unwrap_typer_param
@@ -152,17 +152,7 @@ class DeepDRRServer:
 
         while True:
             try:
-                latest_msgs = {}
-
-                topic, data = await sub_socket.recv_multipart()
-                latest_msgs[topic] = data
-
-                try:
-                    for i in range(1000):
-                        topic, data = await sub_socket.recv_multipart(flags=zmq.NOBLOCK)
-                        latest_msgs[topic] = data
-                except zmq.ZMQError:
-                    pass
+                latest_msgs = await zmq_poll_latest(sub_socket)
 
                 for topic, data in latest_msgs.items():
                     if topic == b"project_request/":
