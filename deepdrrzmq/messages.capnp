@@ -147,7 +147,7 @@ struct AnnoRequest {
 }
 
 struct AnnoResponse {
-    annotationId @0 :Text; # Unique annotation id
+    annoId @0 :Text; # Unique annotation id
     status @1 :StatusResponse; # Status of the request
     anno @2 :Anno; # Annotation
 }
