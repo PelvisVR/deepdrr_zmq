@@ -141,3 +141,25 @@ struct MeshResponse {
     status @1 :StatusResponse; # Status of the request
     mesh @2 :Mesh; # Mesh
 }
+
+struct AnnoRequest {
+    annoId @0 :Text; # Unique annotation id
+}
+
+struct AnnoResponse {
+    annotationId @0 :Text; # Unique annotation id
+    status @1 :StatusResponse; # Status of the request
+    anno @2 :Anno; # Annotation
+}
+
+struct Anno {
+    controlPoints @0 :List(ControlPoint); # List of control points
+}
+
+struct ControlPoint {
+    position @0 :Vector3; # Position of the control point
+}
+
+struct Vector3 {
+    data @0 :List(Float32);
+}

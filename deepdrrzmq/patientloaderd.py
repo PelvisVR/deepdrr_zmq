@@ -95,6 +95,7 @@ class PatientLoaderServer:
         sub_socket.connect(f"tcp://localhost:{self.sub_port}")
 
         sub_socket.setsockopt(zmq.SUBSCRIBE, b"patient_mesh_request/")
+        sub_socket.setsockopt(zmq.SUBSCRIBE, b"patient_annotation_request/")
 
         while True:
             try:
@@ -113,6 +114,8 @@ class PatientLoaderServer:
                 for topic, data in latest_msgs.items():
                     if topic == b"patient_mesh_request/":
                         await self.handle_patient_mesh_request(pub_socket, data)
+                    elif topic == b"patient_annotation_request/":
+                        await self.handle_patient_annotation_request(pub_socket, data)
 
             except DeepDRRServerException as e:
                 print(f"server exception: {e}")
@@ -147,6 +150,35 @@ class PatientLoaderServer:
             await pub_socket.send_multipart([response_topic.encode(), msg.to_bytes()])
             print(f"sent mesh response {response_topic}")
 
+
+    async def handle_patient_annotation_request(self, pub_socket, data):
+        with messages.AnnoRequest.from_bytes(data) as request:
+            print(f"patient_annotation_request: {request.annotationId}")
+
+            annotationId = request.annotationId
+
+            # open the annotation file
+            annotation_file = self.patient_data_dir / annotationId
+            # parse json
+            with open(annotation_file, "r") as f:
+                annotation = json.load(f)
+
+            controlPoints = annotation["markups"]["controlPoints"]
+
+
+            msg = messages.AnnoResponse.new_message()
+            msg.annotationId = annotationId
+            msg.status = make_response(0, "ok")
+            msg.annotation.init("controlPoints", len(controlPoints))
+
+            for i, controlPoint in enumerate(controlPoints):
+                msg.annotation.controlPoints[i].position = controlPoint["position"]
+
+            response_topic = "patient_annotation_response/"+annotationId
+
+            await pub_socket.send_multipart([response_topic.encode(), msg.to_bytes()])
+            print(f"sent annotation response {response_topic}")
+            
 
 @app.command()
 @unwrap_typer_param
