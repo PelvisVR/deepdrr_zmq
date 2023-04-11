@@ -31,6 +31,7 @@ from deepdrrzmq.utils.zmq_util import zmq_no_linger_context, zmq_poll_latest
 
 from .utils.drr_util import from_nifti_cached, from_meshes_cached
 from .utils.typer_util import unwrap_typer_param
+from .instruments.KWire450mm import KWire450mm
 
 import pyvista as pv
 
@@ -192,7 +193,23 @@ class DeepDRRServer:
                 elif volumeParams.which() == "mesh":
                     self.volumes.append(mesh_msg_to_volume(volumeParams.mesh))
                 elif volumeParams.which() == "instrument":
-                    raise DeepDRRServerException(1, f"Instruments deprecated, use meshes instead")
+                    instrumentParams = volumeParams.instrument
+                    known_instruments = {
+                        # "KWire300mm": lambda: KWire300mm(
+                        #     density=instrumentParams.density,
+                        #     world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
+                        # ),
+                        "KWire450mm": lambda: KWire450mm(
+                            density=instrumentParams.density,
+                            world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
+                        ),
+                    }
+                    if instrumentParams.type not in known_instruments:
+                        raise DeepDRRServerException(1, f"unknown instrument: {instrumentParams.type}")
+                    instrumentVolume = known_instruments[instrumentParams.type]()
+                    self.volumes.append(
+                        instrumentVolume
+                    )
                 else:
                     raise DeepDRRServerException(1, f"unknown volume type: {volumeParams.which()}")
             

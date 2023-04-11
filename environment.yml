@@ -12,7 +12,7 @@ dependencies:
   - pycuda
   - pip
   - pip:
-      - git+https://github.com/arcadelab/deepdrr.git@dev
+      - git+https://github.com/PelvisVR/deepdrr.git@dev
       # - deepdrr==1.1.2
       - pyzmq
       - pycapnp

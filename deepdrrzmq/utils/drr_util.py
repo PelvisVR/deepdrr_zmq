@@ -1,6 +1,5 @@
 from joblib import Memory
 import deepdrr
-from ..volume_tools import from_meshes
 
 joblib_cache = deepdrr.utils.data_utils.deepdrr_data_dir()/"joblib_cache"
 joblib_cache.mkdir(parents=True, exist_ok=True)
@@ -12,5 +11,5 @@ def from_nifti_cached(*args, **kwargs):
 
 @memory.cache
 def from_meshes_cached(*args, **kwargs):
-    return from_meshes(*args, **kwargs)
+    return deepdrr.Volume.from_meshes(*args, **kwargs)
 
