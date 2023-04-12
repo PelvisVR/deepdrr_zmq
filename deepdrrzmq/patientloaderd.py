@@ -155,7 +155,8 @@ class PatientLoaderServer:
             msg.annoId = annoId
             msg.status = make_response(0, "ok")
             msg.anno.init("controlPoints", len(controlPoints))
-            msg.anno.type = annotation["markups"][0]["type"]
+            annoType = annotation["markups"][0]["type"]
+            msg.anno.type = annoType
 
             for i, controlPoint in enumerate(controlPoints):
                 msg.anno.controlPoints[i].position.data = controlPoint["position"]
