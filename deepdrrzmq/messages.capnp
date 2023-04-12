@@ -154,6 +154,7 @@ struct AnnoResponse {
 
 struct Anno {
     controlPoints @0 :List(ControlPoint); # List of control points
+    type @1 :Text; # Type of annotation
 }
 
 struct ControlPoint {

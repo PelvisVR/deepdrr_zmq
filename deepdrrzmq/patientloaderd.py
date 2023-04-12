@@ -1,19 +1,11 @@
 import asyncio
-import io
+import json
 import os
-from contextlib import contextmanager
-from typing import List
 
-import deepdrr
-from deepdrr import geo
-from deepdrr.utils import test_utils, image_utils
-from deepdrr.projector import Projector
-from PIL import Image
 import logging
 from pathlib import Path
 import numpy as np
 
-import time
 
 
 import capnp
@@ -21,15 +13,9 @@ import deepdrr
 import numpy as np
 import typer
 import zmq.asyncio
-from PIL import Image
-from deepdrr import geo
-from deepdrr.projector import Projector
-from deepdrrzmq.utils import timer_util
 
-from deepdrrzmq.devices import SimpleDevice
 from deepdrrzmq.utils.zmq_util import zmq_no_linger_context
 
-from .utils.drr_util import from_nifti_cached, from_meshes_cached
 from .utils.typer_util import unwrap_typer_param
 
 from .deepdrrd import DeepDRRServerException
@@ -95,7 +81,7 @@ class PatientLoaderServer:
         sub_socket.connect(f"tcp://localhost:{self.sub_port}")
 
         sub_socket.setsockopt(zmq.SUBSCRIBE, b"patient_mesh_request/")
-        sub_socket.setsockopt(zmq.SUBSCRIBE, b"patient_annotation_request/")
+        sub_socket.setsockopt(zmq.SUBSCRIBE, b"patient_anno_request/")
 
         while True:
             try:
@@ -114,7 +100,7 @@ class PatientLoaderServer:
                 for topic, data in latest_msgs.items():
                     if topic == b"patient_mesh_request/":
                         await self.handle_patient_mesh_request(pub_socket, data)
-                    elif topic == b"patient_annotation_request/":
+                    elif topic == b"patient_anno_request/":
                         await self.handle_patient_annotation_request(pub_socket, data)
 
             except DeepDRRServerException as e:
@@ -125,8 +111,7 @@ class PatientLoaderServer:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self.projector is not None:
-            self.projector.__exit__(exc_type, exc_value, traceback)
+        pass
 
     async def handle_patient_mesh_request(self, pub_socket, data):
         with messages.MeshRequest.from_bytes(data) as request:
@@ -153,28 +138,29 @@ class PatientLoaderServer:
 
     async def handle_patient_annotation_request(self, pub_socket, data):
         with messages.AnnoRequest.from_bytes(data) as request:
-            print(f"patient_annotation_request: {request.annotationId}")
+            print(f"patient_anno_request: {request.annoId}")
 
-            annotationId = request.annotationId
+            annoId = request.annoId
 
             # open the annotation file
-            annotation_file = self.patient_data_dir / annotationId
+            annotation_file = self.patient_data_dir / annoId
             # parse json
             with open(annotation_file, "r") as f:
                 annotation = json.load(f)
 
-            controlPoints = annotation["markups"]["controlPoints"]
+            controlPoints = annotation["markups"][0]["controlPoints"]
 
 
             msg = messages.AnnoResponse.new_message()
-            msg.annotationId = annotationId
+            msg.annoId = annoId
             msg.status = make_response(0, "ok")
-            msg.annotation.init("controlPoints", len(controlPoints))
+            msg.anno.init("controlPoints", len(controlPoints))
+            msg.anno.type = annotation["markups"][0]["type"]
 
             for i, controlPoint in enumerate(controlPoints):
-                msg.annotation.controlPoints[i].position = controlPoint["position"]
+                msg.anno.controlPoints[i].position.data = controlPoint["position"]
 
-            response_topic = "patient_annotation_response/"+annotationId
+            response_topic = "patient_anno_response/"+annoId
 
             await pub_socket.send_multipart([response_topic.encode(), msg.to_bytes()])
             print(f"sent annotation response {response_topic}")
