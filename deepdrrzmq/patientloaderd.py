@@ -166,6 +166,7 @@ class PatientLoaderServer:
             print(f"sent annotation response {response_topic}")
             
 
+
 @app.command()
 @unwrap_typer_param
 def main(
