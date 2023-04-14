@@ -3,7 +3,7 @@
 FROM pytorch/pytorch:1.13.1-cuda11.6-cudnn8-runtime as base
 WORKDIR /app
 
-RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 build-essential -y
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 build-essential git -y
 
 RUN conda install -c conda-forge pycuda -y
 
