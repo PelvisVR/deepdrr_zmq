@@ -165,6 +165,12 @@ struct Vector3 {
     data @0 :List(Float32);
 }
 
+struct SyncedTransformUpdate {
+    transform @0 :Matrix4x4; # Transformation matrix
+    timestamp @1 :Float64; # Timestamp of the transformation matrix
+}   clientId @2 :Text; # Client id
+}}
+
 struct ClientHeartbeat {
     clientId @0 :Text;
 }
