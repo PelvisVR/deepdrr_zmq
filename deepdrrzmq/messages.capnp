@@ -164,3 +164,7 @@ struct ControlPoint {
 struct Vector3 {
     data @0 :List(Float32);
 }
+
+struct ClientHeartbeat {
+    clientId @0 :Text;
+}
