@@ -1,4 +1,4 @@
-git+https://github.com/PelvisVR/deepdrr.git@dev
+git+https://github.com/PelvisVR/deepdrr.git@b470c75
 pyzmq
 pycapnp
 typer
