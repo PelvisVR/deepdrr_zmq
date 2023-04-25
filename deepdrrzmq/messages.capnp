@@ -166,9 +166,9 @@ struct Vector3 {
 }
 
 struct SyncedTransformUpdate {
-    transform @0 :Matrix4x4; # Transformation matrix
-    timestamp @1 :Float64; # Timestamp of the transformation matrix
-    clientId @2 :Text; # Client id
+    timestamp @0 :Float64; # Timestamp of the transformation matrix
+    clientId @1 :Text; # Client id
+    transforms @2 :List(Matrix4x4); # Transformation matrices
 }
 
 struct ClientHeartbeat {
