@@ -18,8 +18,6 @@ from deepdrrzmq.utils.zmq_util import zmq_no_linger_context
 
 from .utils.typer_util import unwrap_typer_param
 
-from .deepdrrd import DeepDRRServerException
-
 import pyvista as pv
 from .utils.server_util import make_response, DeepDRRServerException, messages
 
