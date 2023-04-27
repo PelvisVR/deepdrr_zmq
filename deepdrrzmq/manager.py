@@ -71,6 +71,7 @@ procs = [
     PythonProcess("deepdrrd", "deepdrrzmq.deepdrrd", watchdog_max_dt=-1),
     PythonProcess("zmqproxyd", "deepdrrzmq.zmqproxyd", watchdog_max_dt=-1),
     PythonProcess("patientloaderd", "deepdrrzmq.patientloaderd", watchdog_max_dt=-1),
+    PythonProcess("timed", "deepdrrzmq.timed", watchdog_max_dt=-1),
 ]
 
 managed_processes = {p.name: p for p in procs}

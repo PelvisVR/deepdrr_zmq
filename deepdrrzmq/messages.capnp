@@ -15,7 +15,7 @@ struct OptionalFloat32 {
 }
 
 struct Time {
-    millis @0 :UInt64;
+    millis @0 :Float64;
 }
 
 struct Matrix3x3{
