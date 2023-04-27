@@ -12,4 +12,3 @@ def from_nifti_cached(*args, **kwargs):
 @memory.cache
 def from_meshes_cached(*args, **kwargs):
     return deepdrr.Volume.from_meshes(*args, **kwargs)
-

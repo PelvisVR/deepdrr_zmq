@@ -21,12 +21,11 @@ from .utils.typer_util import unwrap_typer_param
 from .deepdrrd import DeepDRRServerException
 
 import pyvista as pv
+from .utils.server_util import make_response, DeepDRRServerException, messages
 
 # app = typer.Typer()
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
-file_path = os.path.dirname(os.path.realpath(__file__))
-messages = capnp.load(os.path.join(file_path, 'messages.capnp'))
 
 
 def make_response(code, message):

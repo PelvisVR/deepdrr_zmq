@@ -39,14 +39,8 @@ import pyvista as pv
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
 file_path = os.path.dirname(os.path.realpath(__file__))
-messages = capnp.load(os.path.join(file_path, 'messages.capnp'))
 
 
-def make_response(code, message):
-    response = messages.StatusResponse.new_message()
-    response.code = code
-    response.message = message
-    return response
 
 def mesh_msg_to_volume(meshParams):
     surfaces = []
@@ -86,16 +80,7 @@ def nifti_msg_to_volume(niftiParams, patient_data_dir):
     )
     return niftiVolume
 
-class DeepDRRServerException(Exception):
-    def __init__(self, code, message):
-        self.code = code
-        self.message = message
 
-    def __str__(self):
-        return f"DeepDRRServerError({self.code}, {self.message})"
-
-    def status_response(self):
-        return make_response(self.code, self.message)
 
 def capnp_optional(optional):
     if optional.which() == "value":

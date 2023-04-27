@@ -7,7 +7,7 @@ from pathlib import Path
 import capnp
 import typer
 import zmq.asyncio
-import time 
+import time
 from deepdrrzmq.utils.zmq_util import zmq_no_linger_context
 
 from .utils.typer_util import unwrap_typer_param
@@ -18,8 +18,7 @@ from .utils.server_util import make_response, DeepDRRServerException, messages
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
 
-
-class TimeServer:
+class PrintServer:
     def __init__(self, context, rep_port, pub_port, sub_port):
         self.context = context
         self.rep_port = rep_port
@@ -46,17 +45,34 @@ class TimeServer:
         pub_socket.connect(f"tcp://localhost:{self.pub_port}")
         sub_socket.connect(f"tcp://localhost:{self.sub_port}")
 
+        sub_socket.subscribe(b"")
+
         while True:
 
-            # make a new time object with the current time
-            time_msg = messages.Time.new_message()
-            time_msg.millis = time.time()
+            try:
+                latest_msgs = {}
 
-            # send the time object on the /mp/time topic
-            await pub_socket.send_multipart([b"/mp/time/", time_msg.to_bytes()])
+                # topic, data = await sub_socket.recv_multipart()
+                # latest_msgs[topic] = data
 
-            time.sleep(1)
-            print("sent", time_msg.millis)
+                try:
+                    for i in range(1000):
+                        topic, data = await sub_socket.recv_multipart(flags=zmq.NOBLOCK)
+                        latest_msgs[topic] = data
+                except zmq.ZMQError:
+                    pass
+
+                for topic, data in latest_msgs.items():
+                    print(topic, data)
+
+                if len(latest_msgs) == 0:
+                    print("no messages")
+
+                time.sleep(1)
+
+            except DeepDRRServerException as e:
+                print(f"server exception: {e}")
+                await pub_socket.send_multipart([b"server_exception/", e.status_response().to_bytes()])
 
 
 
@@ -80,7 +96,7 @@ def main(
     print(f"sub_port: {sub_port}")
 
     with zmq_no_linger_context(zmq.asyncio.Context()) as context:
-        with TimeServer(context, rep_port, pub_port, sub_port) as time_server:
+        with PrintServer(context, rep_port, pub_port, sub_port) as time_server:
             asyncio.run(time_server.start())
 
 
