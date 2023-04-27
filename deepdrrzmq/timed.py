@@ -54,7 +54,7 @@ class TimeServer:
             time_msg.millis = time.time()
 
             # send the time object on the /mp/time topic
-            await pub_socket.send_multipart([b"mp/time/", time_msg.to_bytes()])
+            await pub_socket.send_multipart([b"/mp/time/", time_msg.to_bytes()])
 
             time.sleep(1)
 
