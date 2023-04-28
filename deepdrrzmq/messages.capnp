@@ -179,7 +179,13 @@ struct SycnedSetting {
     timestamp @0 :Float64; # Timestamp of the setting
     clientId @1 :Text; # Client id
     setting :union {
-        arm @2 :CArmSettings;
+        float @2 :Float32;
+        double @3 :Float64;
+        bool @4 :Bool;
+        int @5 :Int32;
+        long @6 :Int64;
+        string @7 :Text;
+        arm @8 :CArmSettings;
     }
 }
 
