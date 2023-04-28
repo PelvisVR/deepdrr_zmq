@@ -103,7 +103,7 @@ async def receive_loop():
         # print("waiting for next image...")
         topic, data = await sub_socket.recv_multipart()
         # print(f"received: {topic}")
-        if topic == b"project_response/":
+        if topic == b"/project_response/":
             with messages.ProjectResponse.from_bytes(data) as response:
                 # print(f"received image!")
                 for img in response.images:
@@ -114,7 +114,7 @@ async def receive_loop():
                     # show with opencv
                     cv2.imshow("image", np.array(img))
                     cv2.waitKey(1)
-        elif topic == b"projector_params_request/":
+        elif topic == b"/projector_params_request/":
             with messages.StatusResponse.from_bytes(data) as response:
                 # request a new projector
                 msg = messages.ProjectorParamsResponse.new_message()
