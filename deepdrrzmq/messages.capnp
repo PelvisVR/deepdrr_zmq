@@ -174,3 +174,15 @@ struct SyncedTransformUpdate {
 struct ClientHeartbeat {
     clientId @0 :Text;
 }
+
+struct SycnedSetting {
+    timestamp @0 :Float64; # Timestamp of the setting
+    clientId @1 :Text; # Client id
+    setting :union {
+        arm @2 :CArmSettings;
+    }
+}
+
+struct CArmSettings {
+    liveCapture @0 :Bool; # Whether to capture live images
+}   
