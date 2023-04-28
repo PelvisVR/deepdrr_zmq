@@ -35,6 +35,8 @@ from .instruments.KWire450mm import KWire450mm
 
 import pyvista as pv
 
+from .utils.server_util import make_response, DeepDRRServerException, messages
+
 # app = typer.Typer()
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
@@ -251,12 +253,12 @@ class DeepDRRServer:
                 buffer = io.BytesIO()
                 pil_img.save(buffer, format="JPEG")
                 msg.images[0].data = buffer.getvalue()
-                await pub_socket.send_multipart([b"project_response/", msg.to_bytes()])
+                await pub_socket.send_multipart([b"/project_response/", msg.to_bytes()])
 
 
                 msg = messages.ProjectorParamsRequest.new_message()
                 msg.projectorId = request.projectorId
-                await pub_socket.send_multipart([b"projector_params_request/", msg.to_bytes()])
+                await pub_socket.send_multipart([b"/projector_params_request/", msg.to_bytes()])
                 print(f"projector {request.projectorId} not found, requesting projector params")
                 return False
 
@@ -309,7 +311,7 @@ class DeepDRRServer:
 
                 msg.images[i].data = buffer.getvalue()
 
-            await pub_socket.send_multipart([b"project_response/", msg.to_bytes()])
+            await pub_socket.send_multipart([b"/project_response/", msg.to_bytes()])
 
             return True
     
