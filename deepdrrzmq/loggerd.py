@@ -214,7 +214,6 @@ class LoggerServer:
             msg.recording = self.log_recorder.session_id is not None
             msg.sessionId = self.log_recorder.session_id or ""
             await pub_socket.send_multipart([b"/loggerd/status/", msg.to_bytes()])
-            print(f"sent logger status: {msg}")
 
 
     def __enter__(self):
