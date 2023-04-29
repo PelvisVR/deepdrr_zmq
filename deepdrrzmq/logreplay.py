@@ -18,24 +18,18 @@ from .utils.server_util import make_response, DeepDRRServerException, messages
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
 
-class PrintServer:
+class LoggerServer:
     def __init__(self, context, rep_port, pub_port, sub_port):
         self.context = context
         self.rep_port = rep_port
         self.pub_port = pub_port
         self.sub_port = sub_port
 
-        # PATIENT_DATA_DIR environment variable is set by the docker container
-        default_data_dir = Path("/mnt/d/jhonedrive/Johns Hopkins/Benjamin D. Killeen - NMDID-ARCADE/")  # TODO: remove
-        self.patient_data_dir = Path(os.environ.get("PATIENT_DATA_DIR", default_data_dir))
-
-        logging.info(f"patient data dir: {self.patient_data_dir}")
-
     async def start(self):
-        project = self.time_server()
+        project = self.logger_server()
         await asyncio.gather(project)
 
-    async def time_server(self):
+    async def logger_server(self):
         sub_socket = self.context.socket(zmq.SUB)
         sub_socket.hwm = 10000
 
@@ -47,13 +41,13 @@ class PrintServer:
 
         sub_socket.subscribe(b"")
 
+        log_file_path = Path("log.plog")
+        log_file = log_file_path.open("wb")
+
         while True:
 
             try:
                 latest_msgs = {}
-
-                # topic, data = await sub_socket.recv_multipart()
-                # latest_msgs[topic] = data
 
                 try:
                     for i in range(1000):
@@ -63,10 +57,11 @@ class PrintServer:
                     pass
 
                 for topic, data in latest_msgs.items():
-                    print(topic, data)
-
-                if len(latest_msgs) == 0:
-                    print("no messages")
+                    msg = messages.LogEntry.new_message()
+                    msg.logMonoTime = time.time()
+                    msg.topic = topic
+                    msg.data = data
+                    log_file.write(msg.to_bytes())
 
                 time.sleep(1)
 
@@ -96,7 +91,7 @@ def main(
     print(f"sub_port: {sub_port}")
 
     with zmq_no_linger_context(zmq.asyncio.Context()) as context:
-        with PrintServer(context, rep_port, pub_port, sub_port) as time_server:
+        with LoggerServer(context, rep_port, pub_port, sub_port) as time_server:
             asyncio.run(time_server.start())
 
 

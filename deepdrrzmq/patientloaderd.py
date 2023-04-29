@@ -102,7 +102,7 @@ class PatientLoaderServer:
 
             except DeepDRRServerException as e:
                 print(f"server exception: {e}")
-                await pub_socket.send_multipart([b"server_exception/", e.status_response().to_bytes()])
+                await pub_socket.send_multipart([b"/server_exception/", e.status_response().to_bytes()])
 
     def __enter__(self):
         return self

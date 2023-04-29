@@ -191,4 +191,10 @@ struct SycnedSetting {
 
 struct CArmSettings {
     liveCapture @0 :Bool; # Whether to capture live images
-}   
+}  
+
+struct LogEntry {
+    logMonoTime @0 :Float64; # Timestamp of the log message
+    topic @1 :Data; # Topic of the log message
+    data @2 :Data; # Log message
+}
