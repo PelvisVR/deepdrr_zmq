@@ -198,3 +198,8 @@ struct LogEntry {
     topic @1 :Data; # Topic of the log message
     data @2 :Data; # Log message
 }
+
+struct LoggerStatus {
+    recording @0 :Bool; # Whether the logger is recording
+    sessionId @1 :Text; # Session id of the logger
+}
