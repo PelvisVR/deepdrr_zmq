@@ -25,3 +25,6 @@ DOCKER_PATIENT_DATA_DIR="C:\path\to\patient\data"
 - cd to the root directory of this repository
 - `docker pull ghcr.io/pelvisvr/deepdrr_zmq:master`
 - `docker compose up -d --no-build`
+
+## Documentation
+- [API](https://pelvisvr.github.io/deepdrr_zmq/deepdrrzmq.html)
