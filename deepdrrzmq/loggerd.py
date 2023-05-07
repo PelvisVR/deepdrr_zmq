@@ -20,6 +20,9 @@ import string
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
 class LogWriter:
+    """
+    Stream wrapper for writing to a log file.
+    """
     def __init__(self, fileobj):
         self.filestream = fileobj
         # self.filestream = log_file_path.open("wb")
@@ -37,7 +40,19 @@ class LogWriter:
         return self.filestream.write(data)
 
 class LogShardWriter:
+    """
+    Stream wrapper for writing to a log file. Automatically switches to a new
+    file when the current one reaches a certain size.
+    """
     def __init__(self, pattern, maxcount, maxsize, start_shard=0, verbose=False, **kw):
+        """
+        :param pattern: The pattern for the log file names. Must contain a single %d placeholder.
+        :param maxcount: The maximum number of messages per file.
+        :param maxsize: The maximum size of a file in bytes.
+        :param start_shard: The shard number to start with.
+        :param verbose: Whether to print information about the log files.
+        :param kw: Additional keyword arguments for the LogWriter.
+        """
         self.verbose = 1
         self.maxcount = maxcount
         self.maxsize = maxsize
@@ -54,6 +69,9 @@ class LogShardWriter:
 
 
     def next_stream(self):
+        """
+        Switch to the next log file.
+        """
         self.finish()
         self.fname = self.pattern % self.shard
         if self.verbose:
@@ -71,6 +89,10 @@ class LogShardWriter:
         self.size = 0
 
     def write(self, data):
+        """
+        Write data to the current log file. If the file is full, switch to a new one.
+        :param data: The data to write.
+        """
         if (
             self.logstream is None
             or self.count >= self.maxcount
@@ -83,12 +105,18 @@ class LogShardWriter:
         self.size += size
 
     def finish(self):
+        """
+        Close the current log file.
+        """
         if self.logstream is not None:
             self.logstream.close()
             assert self.fname is not None
             self.logstream = None
 
     def close(self):
+        """
+        Close the current log file stream.
+        """
         self.finish()
 
     def __enter__(self):
@@ -99,13 +127,23 @@ class LogShardWriter:
 
 
 class LogRecorder:
+    """
+    Context manager for logging data from the surgical simulation.
+    """
     def __init__(self, log_root_path, **kw):
+        """
+        :param log_root_path: The path to the root folder where the logs should be stored.
+        :param kw: Additional keyword arguments for the LogShardWriter.
+        """
         self.kw = kw
         self.log_root_path = log_root_path
         self.session = None
         self.session_id = None
 
     def new_session(self):
+        """
+        Start a new logging session.
+        """
         self.finish()
         self.session_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=16))
 
@@ -121,9 +159,15 @@ class LogRecorder:
         self.session = LogShardWriter(str(log_path), **self.kw)
 
     def stop_session(self):
+        """
+        Stop the current logging session.
+        """
         self.finish()
 
     def write(self, data):
+        """
+        Write data to the current log session if there is one.
+        """
         if (
             self.session is None
         ):
@@ -131,12 +175,18 @@ class LogRecorder:
         self.session.write(data)
 
     def finish(self):
+        """
+        Close the current log session.
+        """
         if self.session is not None:
             self.session.close()
             self.session = None
             self.session_id = None
 
     def close(self):
+        """
+        Close the log session.
+        """
         self.finish()
 
     def __enter__(self):
@@ -146,7 +196,17 @@ class LogRecorder:
         self.close()
 
 class LoggerServer:
+    """
+    Server for logging data from the surgical simulation.
+    """
     def __init__(self, context, rep_port, pub_port, sub_port, log_root_path):
+        """
+        :param context: The zmq context to use.
+        :param rep_port: The port to use for the request-reply socket.
+        :param pub_port: The port to use for the publish socket.
+        :param sub_port: The port to use for the subscribe socket.
+        :param log_root_path: The path to the root folder where the logs should be stored.
+        """
         self.context = context
         self.rep_port = rep_port
         self.pub_port = pub_port

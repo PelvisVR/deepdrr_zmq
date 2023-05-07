@@ -1,3 +1,7 @@
+"""
+A simple server that prints all messages it receives for debugging purposes.
+"""
+
 import asyncio
 import os
 
@@ -19,17 +23,20 @@ app = typer.Typer(pretty_exceptions_show_locals=False)
 
 
 class PrintServer:
+    """
+    A process that prints all messages it receives.
+    """
     def __init__(self, context, rep_port, pub_port, sub_port):
+        """
+        :param context: The ZMQ context to use for creating sockets.
+        :param rep_port: The port to use for the request/reply socket.
+        :param pub_port: The port to use for the publisher socket.
+        :param sub_port: The port to use for the subscriber socket.
+        """
         self.context = context
         self.rep_port = rep_port
         self.pub_port = pub_port
         self.sub_port = sub_port
-
-        # PATIENT_DATA_DIR environment variable is set by the docker container
-        default_data_dir = Path("/mnt/d/jhonedrive/Johns Hopkins/Benjamin D. Killeen - NMDID-ARCADE/")  # TODO: remove
-        self.patient_data_dir = Path(os.environ.get("PATIENT_DATA_DIR", default_data_dir))
-
-        logging.info(f"patient data dir: {self.patient_data_dir}")
 
     async def start(self):
         project = self.time_server()
@@ -51,9 +58,6 @@ class PrintServer:
 
             try:
                 latest_msgs = {}
-
-                # topic, data = await sub_socket.recv_multipart()
-                # latest_msgs[topic] = data
 
                 try:
                     for i in range(1000):

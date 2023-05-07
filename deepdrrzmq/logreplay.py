@@ -19,7 +19,16 @@ app = typer.Typer(pretty_exceptions_show_locals=False)
 
 
 class LoggerServer:
+    """
+    A process that replays all messages from a log file.
+    """
     def __init__(self, context, rep_port, pub_port, sub_port):
+        """
+        :param context: The ZMQ context to use for creating sockets.
+        :param rep_port: The port to use for the request/reply socket.
+        :param pub_port: The port to use for the publisher socket.
+        :param sub_port: The port to use for the subscriber socket.
+        """
         self.context = context
         self.rep_port = rep_port
         self.pub_port = pub_port

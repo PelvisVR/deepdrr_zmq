@@ -45,6 +45,12 @@ file_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def mesh_msg_to_volume(meshParams):
+    """
+    Convert a mesh message to a volume.
+
+    :param meshParams: The mesh to convert.
+    :return: The volume.
+    """
     surfaces = []
     for volumeMesh in meshParams.meshes:
         vertices = np.array(volumeMesh.mesh.vertices).reshape(-1, 3)
@@ -63,6 +69,14 @@ def mesh_msg_to_volume(meshParams):
     return meshVolume
 
 def nifti_msg_to_volume(niftiParams, patient_data_dir):
+    """
+    Convert a nifti message to a volume.
+
+    :param niftiParams: The nifti message to convert.
+    :param patient_data_dir: The directory containing the patient data.
+    :return: The volume.
+    """
+
     # if niftiParams.path is a relative path, make it relative to the patient data directory
     if not Path(niftiParams.path).expanduser().is_absolute():
         niftiPath = str(patient_data_dir / niftiParams.path)
@@ -83,14 +97,25 @@ def nifti_msg_to_volume(niftiParams, patient_data_dir):
     return niftiVolume
 
 
-
 def capnp_optional(optional):
+    """
+    Convert a capnp optional to a python optional.
+    
+    :param optional: The capnp optional.
+    :return: The python optional.
+    """
     if optional.which() == "value":
         return optional.value
     else:
         return None
 
 def capnp_square_matrix(optional):
+    """
+    Convert a capnp optional square matrix to a numpy array.
+    
+    :param optional: The capnp optional square matrix.
+    :return: The numpy array.
+    """
     if len(optional.data) == 0:
         return None
     else:
@@ -102,7 +127,26 @@ def capnp_square_matrix(optional):
         return arr
 
 class DeepDRRServer:
+    """
+    DeepDRR server that handles requests from the client and sends responses.
+
+    The server is implemented as a single asyncio task that runs forever.
+
+    The server is responsible for:
+    - handling requests from the client
+    - sending responses to the client
+    - managing the projector
+    - managing the volumes
+    """
     def __init__(self, context, rep_port, pub_port, sub_port):
+        """
+        Create a new DeepDRR server.
+        
+        :param context: The zmq context.
+        :param rep_port: The port to use for the request-reply socket.
+        :param pub_port: The port to use for the publish socket.
+        :param sub_port: The port to use for the subscribe socket.
+        """
         self.context = context
         self.rep_port = rep_port
         self.pub_port = pub_port
@@ -122,10 +166,17 @@ class DeepDRRServer:
         logging.info(f"patient data dir: {self.patient_data_dir}")
 
     async def start(self):
+        """
+        Start the server.
+        """
+
         project = self.project_server()
         await asyncio.gather(project)
 
     async def project_server(self):
+        """
+        Project server that handles requests from the client and sends responses.
+        """
         sub_socket = self.context.socket(zmq.SUB)
         sub_socket.hwm = 10000
 
@@ -162,6 +213,11 @@ class DeepDRRServer:
             self.projector.__exit__(exc_type, exc_value, traceback)
 
     async def handle_projector_params_response(self, data):
+        """
+        Handle a projector params response from the client.
+        
+        :param data: The data of the response.
+        """
         # for now, only one projector at a time
         # if the current projector is not the same as the one in the request, delete the old and create a new one
         with messages.ProjectorParamsResponse.from_bytes(data) as command:
@@ -182,10 +238,6 @@ class DeepDRRServer:
                 elif volumeParams.which() == "instrument":
                     instrumentParams = volumeParams.instrument
                     known_instruments = {
-                        # "KWire300mm": lambda: KWire300mm(
-                        #     density=instrumentParams.density,
-                        #     world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
-                        # ),
                         "KWire450mm": lambda: KWire450mm(
                             density=instrumentParams.density,
                             world_from_anatomical=capnp_square_matrix(instrumentParams.worldFromAnatomical),
@@ -237,6 +289,13 @@ class DeepDRRServer:
             print(f"created projector {self.projector_id}")
 
     async def handle_project_request(self, pub_socket, data):
+        """
+        Handle a project request from the client.
+
+        :param pub_socket: The socket to send the response on.
+        :param data: The data of the request.
+        """
+        
         with messages.ProjectRequest.from_bytes(data) as request:
             # print(f"received project request: {request.requestId} for projector {request.projectorId}")
             if self.projector is None or request.projectorId != self.projector_id:
@@ -321,11 +380,9 @@ class DeepDRRServer:
 @app.command()
 @unwrap_typer_param
 def main(
-        # ip=typer.Argument('localhost', help="ip address of the receiver"),
         rep_port=typer.Argument(40100),
         pub_port=typer.Argument(40101),
         sub_port=typer.Argument(40102),
-        # bind=typer.Option(True, help="bind to the port instead of connecting to it"),
 ):
 
     # print arguments

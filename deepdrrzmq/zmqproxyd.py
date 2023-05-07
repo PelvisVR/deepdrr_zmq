@@ -1,3 +1,11 @@
+"""
+This module implements a zmq pub/sub proxy server.
+
+The proxy server is used to forward messages from the client to the
+server and vice versa. It uses the ZeroMQ XPUB/XSUB pattern to
+handle requests from the client.
+"""
+
 import signal
 import zmq
 

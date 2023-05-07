@@ -1,3 +1,10 @@
+"""
+Manager for deepdrrzmq processes.
+Prints a status line for each process every second.
+
+Usage:
+    python -m deepdrrzmq.manager
+"""
 # adapted from https://github.com/commaai/openpilot
 
 import datetime

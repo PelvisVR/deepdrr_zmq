@@ -19,39 +19,25 @@ from deepdrrzmq.utils.zmq_util import zmq_no_linger_context
 from .utils.typer_util import unwrap_typer_param
 
 import pyvista as pv
-from .utils.server_util import make_response, DeepDRRServerException, messages
+from .utils.server_util import make_response, DeepDRRServerException, messages, capnp_square_matrix, capnp_optional
 
 # app = typer.Typer()
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
 
-
-def make_response(code, message):
-    response = messages.StatusResponse.new_message()
-    response.code = code
-    response.message = message
-    return response
-
-
-def capnp_optional(optional):
-    if optional.which() == "value":
-        return optional.value
-    else:
-        return None
-
-def capnp_square_matrix(optional):
-    if len(optional.data) == 0:
-        return None
-    else:
-        arr = np.array(optional.data)
-        size = len(arr)
-        side = int(size ** 0.5)
-        assert size == side ** 2, f"expected square matrix, got {size} elements"
-        arr = arr.reshape((side, side))
-        return arr
-
 class PatientLoaderServer:
+    """
+    This class implements a server that can be used to load patient data.
+    The server is used to load data from the patient loader service. It
+    uses the ZeroMQ REQ/REP pattern to handle requests from the client.
+    """
     def __init__(self, context, rep_port, pub_port, sub_port):
+        """
+        :param context: The ZMQ context to use for creating sockets.
+        :param rep_port: The port to use for the request/reply socket.
+        :param pub_port: The port to use for the publisher socket.
+        :param sub_port: The port to use for the subscriber socket.
+        """
         self.context = context
         self.rep_port = rep_port
         self.pub_port = pub_port
@@ -86,13 +72,6 @@ class PatientLoaderServer:
 
                 topic, data = await sub_socket.recv_multipart()
                 latest_msgs[topic] = data
-
-                # try:
-                #     for i in range(1000):
-                #         topic, data = await sub_socket.recv_multipart(flags=zmq.NOBLOCK)
-                #         latest_msgs[topic] = data
-                # except zmq.ZMQError:
-                #     pass
 
                 for topic, data in latest_msgs.items():
                     if topic == b"patient_mesh_request/":

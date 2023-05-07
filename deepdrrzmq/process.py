@@ -1,3 +1,6 @@
+"""
+Process manager helper classes with auto-restart watchdogs.
+"""
 # adapted from https://github.com/commaai/openpilot
 
 import importlib
