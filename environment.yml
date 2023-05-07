@@ -10,6 +10,7 @@ dependencies:
   - pytorch-cuda=11.7
   - cudatoolkit-dev=11.7
   - pycuda
+  - sphinx
   - pip
   - pip:
       - git+https://github.com/PelvisVR/deepdrr.git@dev
