@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    deepdrrzmq.devices
+   deepdrrzmq.utils
 
 Submodules
 ----------
