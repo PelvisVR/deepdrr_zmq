@@ -20,7 +20,7 @@ class SimpleDevice(Device):
         """
         :param sensor_height: height of the sensor in pixels
         :param sensor_width: width of the sensor in pixels
-        :param pixel_size: size of a pixel in mm
+        :param pixel_size: size of a pixel in       mm
         :param source_to_detector_distance: distance from the source to the detector in mm
         :param world_from_device: transform from the device to the world
         """

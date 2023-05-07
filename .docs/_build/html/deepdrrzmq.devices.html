@@ -43,6 +43,22 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepdrrzmq.devices.SimpleDevice.</span></span><span class="sig-name descname"><span class="pre">SimpleDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_to_detector_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_from_device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FrameTransform</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.devices.SimpleDevice.SimpleDevice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></p>
 <p>Simple DeepDRR device which only uses the camera intrinsics and the world from device transform.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.devices.SimpleDevice.SimpleDevice.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_to_detector_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_from_device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FrameTransform</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.devices.SimpleDevice.SimpleDevice.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_height</strong> – height of the sensor in pixels</p></li>
+<li><p><strong>sensor_width</strong> – width of the sensor in pixels</p></li>
+<li><p><strong>pixel_size</strong> – size of a pixel in       mm</p></li>
+<li><p><strong>source_to_detector_distance</strong> – distance from the source to the detector in mm</p></li>
+<li><p><strong>world_from_device</strong> – transform from the device to the world</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="deepdrrzmq.devices.SimpleDevice.SimpleDevice.camera_intrinsics">
 <span class="sig-name descname"><span class="pre">camera_intrinsics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">CameraIntrinsicTransform</span></em><a class="headerlink" href="#deepdrrzmq.devices.SimpleDevice.SimpleDevice.camera_intrinsics" title="Permalink to this definition">¶</a></dt>
@@ -108,6 +124,22 @@ image. It points from the source toward the detector.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepdrrzmq.devices.</span></span><span class="sig-name descname"><span class="pre">SimpleDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_to_detector_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_from_device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FrameTransform</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.devices.SimpleDevice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></p>
 <p>Simple DeepDRR device which only uses the camera intrinsics and the world from device transform.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.devices.SimpleDevice.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_to_detector_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_from_device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FrameTransform</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.devices.SimpleDevice.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_height</strong> – height of the sensor in pixels</p></li>
+<li><p><strong>sensor_width</strong> – width of the sensor in pixels</p></li>
+<li><p><strong>pixel_size</strong> – size of a pixel in       mm</p></li>
+<li><p><strong>source_to_detector_distance</strong> – distance from the source to the detector in mm</p></li>
+<li><p><strong>world_from_device</strong> – transform from the device to the world</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="deepdrrzmq.devices.SimpleDevice.camera_intrinsics">
 <span class="sig-name descname"><span class="pre">camera_intrinsics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">CameraIntrinsicTransform</span></em><a class="headerlink" href="#deepdrrzmq.devices.SimpleDevice.camera_intrinsics" title="Permalink to this definition">¶</a></dt>

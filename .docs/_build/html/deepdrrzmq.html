@@ -41,6 +41,7 @@
 <li class="toctree-l2"><a class="reference internal" href="deepdrrzmq.devices.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="deepdrrzmq.devices.html#module-deepdrrzmq.devices.SimpleDevice">deepdrrzmq.devices.SimpleDevice module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="deepdrrzmq.devices.html#deepdrrzmq.devices.SimpleDevice.SimpleDevice"><code class="docutils literal notranslate"><span class="pre">SimpleDevice</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="deepdrrzmq.devices.html#deepdrrzmq.devices.SimpleDevice.SimpleDevice.__init__"><code class="docutils literal notranslate"><span class="pre">SimpleDevice.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="deepdrrzmq.devices.html#deepdrrzmq.devices.SimpleDevice.SimpleDevice.camera_intrinsics"><code class="docutils literal notranslate"><span class="pre">SimpleDevice.camera_intrinsics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="deepdrrzmq.devices.html#deepdrrzmq.devices.SimpleDevice.SimpleDevice.device_from_camera3d"><code class="docutils literal notranslate"><span class="pre">SimpleDevice.device_from_camera3d</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="deepdrrzmq.devices.html#deepdrrzmq.devices.SimpleDevice.SimpleDevice.pixel_size"><code class="docutils literal notranslate"><span class="pre">SimpleDevice.pixel_size</span></code></a></li>
@@ -55,6 +56,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="deepdrrzmq.devices.html#module-deepdrrzmq.devices">Module contents</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="deepdrrzmq.devices.html#deepdrrzmq.devices.SimpleDevice"><code class="docutils literal notranslate"><span class="pre">SimpleDevice</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="deepdrrzmq.devices.html#deepdrrzmq.devices.SimpleDevice.__init__"><code class="docutils literal notranslate"><span class="pre">SimpleDevice.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="deepdrrzmq.devices.html#deepdrrzmq.devices.SimpleDevice.camera_intrinsics"><code class="docutils literal notranslate"><span class="pre">SimpleDevice.camera_intrinsics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="deepdrrzmq.devices.html#deepdrrzmq.devices.SimpleDevice.device_from_camera3d"><code class="docutils literal notranslate"><span class="pre">SimpleDevice.device_from_camera3d</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="deepdrrzmq.devices.html#deepdrrzmq.devices.SimpleDevice.pixel_size"><code class="docutils literal notranslate"><span class="pre">SimpleDevice.pixel_size</span></code></a></li>
@@ -121,6 +123,22 @@
 - sending responses to the client
 - managing the projector
 - managing the volumes</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.deepdrrd.DeepDRRServer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rep_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.deepdrrd.DeepDRRServer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new DeepDRR server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – The zmq context.</p></li>
+<li><p><strong>rep_port</strong> – The port to use for the request-reply socket.</p></li>
+<li><p><strong>pub_port</strong> – The port to use for the publish socket.</p></li>
+<li><p><strong>sub_port</strong> – The port to use for the subscribe socket.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.deepdrrd.DeepDRRServer.handle_project_request">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_project_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pub_socket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.deepdrrd.DeepDRRServer.handle_project_request" title="Permalink to this definition">¶</a></dt>
@@ -233,6 +251,19 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Context manager for logging data from the surgical simulation.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.loggerd.LogRecorder.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_root_path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.loggerd.LogRecorder.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_root_path</strong> – The path to the root folder where the logs should be stored.</p></li>
+<li><p><strong>kw</strong> – Additional keyword arguments for the LogShardWriter.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.loggerd.LogRecorder.close">
 <span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.loggerd.LogRecorder.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close the log session.</p>
@@ -271,6 +302,23 @@
 <p>Stream wrapper for writing to a log file. Automatically switches to a new
 file when the current one reaches a certain size.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.loggerd.LogShardWriter.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxcount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_shard</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.loggerd.LogShardWriter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pattern</strong> – The pattern for the log file names. Must contain a single %d placeholder.</p></li>
+<li><p><strong>maxcount</strong> – The maximum number of messages per file.</p></li>
+<li><p><strong>maxsize</strong> – The maximum size of a file in bytes.</p></li>
+<li><p><strong>start_shard</strong> – The shard number to start with.</p></li>
+<li><p><strong>verbose</strong> – Whether to print information about the log files.</p></li>
+<li><p><strong>kw</strong> – Additional keyword arguments for the LogWriter.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.loggerd.LogShardWriter.close">
 <span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.loggerd.LogShardWriter.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close the current log file stream.</p>
@@ -303,6 +351,11 @@ file when the current one reaches a certain size.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Stream wrapper for writing to a log file.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.loggerd.LogWriter.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fileobj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.loggerd.LogWriter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.loggerd.LogWriter.close">
 <span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.loggerd.LogWriter.close" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -319,6 +372,22 @@ file when the current one reaches a certain size.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepdrrzmq.loggerd.</span></span><span class="sig-name descname"><span class="pre">LoggerServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rep_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_root_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.loggerd.LoggerServer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Server for logging data from the surgical simulation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.loggerd.LoggerServer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rep_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_root_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.loggerd.LoggerServer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – The zmq context to use.</p></li>
+<li><p><strong>rep_port</strong> – The port to use for the request-reply socket.</p></li>
+<li><p><strong>pub_port</strong> – The port to use for the publish socket.</p></li>
+<li><p><strong>sub_port</strong> – The port to use for the subscribe socket.</p></li>
+<li><p><strong>log_root_path</strong> – The path to the root folder where the logs should be stored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.loggerd.LoggerServer.logger_server">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logger_server</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.loggerd.LoggerServer.logger_server" title="Permalink to this definition">¶</a></dt>
@@ -351,6 +420,21 @@ file when the current one reaches a certain size.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepdrrzmq.logreplay.</span></span><span class="sig-name descname"><span class="pre">LoggerServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rep_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.logreplay.LoggerServer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A process that replays all messages from a log file.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.logreplay.LoggerServer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rep_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.logreplay.LoggerServer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – The ZMQ context to use for creating sockets.</p></li>
+<li><p><strong>rep_port</strong> – The port to use for the request/reply socket.</p></li>
+<li><p><strong>pub_port</strong> – The port to use for the publisher socket.</p></li>
+<li><p><strong>sub_port</strong> – The port to use for the subscriber socket.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.logreplay.LoggerServer.logger_server">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logger_server</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.logreplay.LoggerServer.logger_server" title="Permalink to this definition">¶</a></dt>
@@ -407,6 +491,21 @@ Prints a status line for each process every second.</p>
 <p>This class implements a server that can be used to load patient data.
 The server is used to load data from the patient loader service. It
 uses the ZeroMQ REQ/REP pattern to handle requests from the client.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.patientloaderd.PatientLoaderServer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rep_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.patientloaderd.PatientLoaderServer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – The ZMQ context to use for creating sockets.</p></li>
+<li><p><strong>rep_port</strong> – The port to use for the request/reply socket.</p></li>
+<li><p><strong>pub_port</strong> – The port to use for the publisher socket.</p></li>
+<li><p><strong>sub_port</strong> – The port to use for the subscriber socket.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.patientloaderd.PatientLoaderServer.handle_patient_annotation_request">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_patient_annotation_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pub_socket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.patientloaderd.PatientLoaderServer.handle_patient_annotation_request" title="Permalink to this definition">¶</a></dt>
@@ -467,6 +566,21 @@ topic.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepdrrzmq.printd.</span></span><span class="sig-name descname"><span class="pre">PrintServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rep_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.printd.PrintServer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A process that prints all messages it receives.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.printd.PrintServer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rep_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.printd.PrintServer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – The ZMQ context to use for creating sockets.</p></li>
+<li><p><strong>rep_port</strong> – The port to use for the request/reply socket.</p></li>
+<li><p><strong>pub_port</strong> – The port to use for the publisher socket.</p></li>
+<li><p><strong>sub_port</strong> – The port to use for the subscriber socket.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.printd.PrintServer.start">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.printd.PrintServer.start" title="Permalink to this definition">¶</a></dt>
@@ -579,6 +693,11 @@ topic.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepdrrzmq.process.</span></span><span class="sig-name descname"><span class="pre">NativeProcess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmdline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigkill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">watchdog_max_dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.process.NativeProcess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#deepdrrzmq.process.ManagerProcess" title="deepdrrzmq.process.ManagerProcess"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManagerProcess</span></code></a></p>
 <dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.process.NativeProcess.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmdline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigkill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">watchdog_max_dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.process.NativeProcess.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.process.NativeProcess.prepare">
 <span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#deepdrrzmq.process.NativeProcess.prepare" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -594,6 +713,11 @@ topic.</p>
 <dt class="sig sig-object py" id="deepdrrzmq.process.PythonProcess">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepdrrzmq.process.</span></span><span class="sig-name descname"><span class="pre">PythonProcess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigkill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">watchdog_max_dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.process.PythonProcess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#deepdrrzmq.process.ManagerProcess" title="deepdrrzmq.process.ManagerProcess"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManagerProcess</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.process.PythonProcess.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigkill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">watchdog_max_dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.process.PythonProcess.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.process.PythonProcess.prepare">
 <span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#deepdrrzmq.process.PythonProcess.prepare" title="Permalink to this definition">¶</a></dt>
@@ -637,6 +761,21 @@ topic.</p>
 <p>The time server is a process that publishes the current time to all
 subscribers. The time is published once per second. The time is used
 to synchronize the multiplayer messages.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="deepdrrzmq.timed.TimeServer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rep_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.timed.TimeServer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – The ZMQ context to use for creating sockets.</p></li>
+<li><p><strong>rep_port</strong> – The port to use for the request/reply socket.</p></li>
+<li><p><strong>pub_port</strong> – The port to use for the publisher socket.</p></li>
+<li><p><strong>sub_port</strong> – The port to use for the subscriber socket.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="deepdrrzmq.timed.TimeServer.start">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#deepdrrzmq.timed.TimeServer.start" title="Permalink to this definition">¶</a></dt>
