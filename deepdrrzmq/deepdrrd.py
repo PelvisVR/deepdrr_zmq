@@ -53,15 +53,16 @@ def mesh_msg_to_volume(meshParams):
     """
     surfaces = []
     for volumeMesh in meshParams.meshes:
-        vertices = np.array(volumeMesh.mesh.vertices).reshape(-1, 3)
-        faces = np.array(volumeMesh.mesh.faces).reshape(-1, 3)
-        faces = np.pad(faces, ((0, 0), (1, 0)), constant_values=3)
-        faces = faces.flatten()
+        vertices = np.array(volumeMesh.mesh.vertices).reshape(-1, 3) # Convert to Nx3 array
+        faces = np.array(volumeMesh.mesh.faces).reshape(-1, 3) # Convert to Nx3 array
+        faces = np.pad(faces, ((0, 0), (1, 0)), constant_values=3) # Add face count to front of each face
+        faces = faces.flatten() # Flatten to 1D array
         if len(faces) == 0:
             continue
-        surface = pv.PolyData(vertices, faces)
-        surfaces.append((volumeMesh.material, volumeMesh.density, surface))
+        surface = pv.PolyData(vertices, faces) # Create pyvista surface
+        surfaces.append((volumeMesh.material, volumeMesh.density, surface)) # Add surface to list of surfaces
 
+    # Create volume from surfaces
     meshVolume = from_meshes_cached(
         voxel_size=meshParams.voxelSize,
         surfaces=surfaces
@@ -120,8 +121,8 @@ def capnp_square_matrix(optional):
         return None
     else:
         arr = np.array(optional.data)
-        size = len(arr)
-        side = int(size ** 0.5)
+        size = len(arr) # number of elements
+        side = int(size ** 0.5) # square root
         assert size == side ** 2, f"expected square matrix, got {size} elements"
         arr = arr.reshape((side, side))
         return arr
@@ -157,7 +158,7 @@ class DeepDRRServer:
 
         self.volumes = []  # type: List[deepdrr.Volume]
 
-        self.fps = timer_util.FPS(1)
+        self.fps = timer_util.FPS(1) # FPS counter for projector
         
         # PATIENT_DATA_DIR environment variable is set by the docker container
         default_data_dir = Path("/mnt/d/jhonedrive/Johns Hopkins/Benjamin D. Killeen - NMDID-ARCADE/")  # TODO: remove
@@ -295,7 +296,7 @@ class DeepDRRServer:
         :param pub_socket: The socket to send the response on.
         :param data: The data of the request.
         """
-        
+
         with messages.ProjectRequest.from_bytes(data) as request:
             # print(f"received project request: {request.requestId} for projector {request.projectorId}")
             if self.projector is None or request.projectorId != self.projector_id:

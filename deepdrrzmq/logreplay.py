@@ -8,7 +8,7 @@ import capnp
 import typer
 import zmq.asyncio
 import time
-from deepdrrzmq.utils.zmq_util import zmq_no_linger_context
+from deepdrrzmq.utils.zmq_util import zmq_no_linger_context, zmq_poll_latest
 
 from .utils.typer_util import unwrap_typer_param
 from .utils.server_util import make_response, DeepDRRServerException, messages
@@ -56,14 +56,7 @@ class LoggerServer:
         while True:
 
             try:
-                latest_msgs = {}
-
-                try:
-                    for i in range(1000):
-                        topic, data = await sub_socket.recv_multipart(flags=zmq.NOBLOCK)
-                        latest_msgs[topic] = data
-                except zmq.ZMQError:
-                    pass
+                latest_msgs = await zmq_poll_latest(sub_socket)
 
                 for topic, data in latest_msgs.items():
                     msg = messages.LogEntry.new_message()
