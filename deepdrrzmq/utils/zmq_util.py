@@ -12,6 +12,13 @@ def zmq_no_linger_context(context):
 
 
 async def zmq_poll_latest(sub_socket, max_skip=1000):
+    """
+    Polls the latest messages from a zmq socket.
+    
+    :param sub_socket: the socket to poll
+    :param max_skip: the maximum number of messages to skip
+    :return: a dictionary mapping topics to messages
+    """
     latest_msgs = {}
 
     topic, data = await sub_socket.recv_multipart()

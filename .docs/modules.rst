@@ -1,4 +1,4 @@
-cis-pa-3-4
+PelvisVR Server
 ==========
 
 .. toctree::

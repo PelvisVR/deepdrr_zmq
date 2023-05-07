@@ -8,18 +8,37 @@ file_path = os.path.dirname(os.path.realpath(__file__))
 messages = capnp.load(os.path.join(file_path, "..", 'messages.capnp'))
 
 def make_response(code, message):
+    """
+    Create a StatusResponse message with the given code and message.
+
+    :param code: The status code.
+    :param message: The status message.
+    :return: The StatusResponse message.
+    """
     response = messages.StatusResponse.new_message()
     response.code = code
     response.message = message
     return response
 
 def capnp_optional(optional):
+    """
+    Convert a capnp optional to a python value.
+    
+    :param optional: The capnp optional.
+    :return: The value of the optional, or None if the optional is not set.
+    """
     if optional.which() == "value":
         return optional.value
     else:
         return None
 
 def capnp_square_matrix(optional):
+    """
+    Convert a capnp optional to a square numpy array.
+    
+    :param optional: The capnp optional.
+    :return: The value of the optional, or None if the optional is not set.
+    """
     if len(optional.data) == 0:
         return None
     else:
@@ -31,7 +50,14 @@ def capnp_square_matrix(optional):
         return arr
 
 class DeepDRRServerException(Exception):
+    """
+    Exception class for server errors.
+    """
     def __init__(self, code, message):
+        """
+        :param code: The status code.
+        :param message: The status message.
+        """
         self.code = code
         self.message = message
 

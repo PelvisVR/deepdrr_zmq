@@ -8,9 +8,9 @@
 import os
 import sys
 
-project = 'CIS PA12'
-copyright = '2022, Liam Wang and Shubhan Mathur'
-author = 'Liam Wang and Shubhan Mathur'
+project = 'PelvisVR Server'
+copyright = '2023 ARCADE Lab'
+author = 'Han Zhang, Zixuan Liu, Liam Wang'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
