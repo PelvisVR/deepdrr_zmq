@@ -73,6 +73,7 @@ class PatientLoaderServer:
                 topic, data = await sub_socket.recv_multipart()
                 latest_msgs[topic] = data
 
+                # process all most recent messages received since the last time we checked
                 for topic, data in latest_msgs.items():
                     if topic == b"patient_mesh_request/":
                         await self.handle_patient_mesh_request(pub_socket, data)
@@ -90,6 +91,15 @@ class PatientLoaderServer:
         pass
 
     async def handle_patient_mesh_request(self, pub_socket, data):
+        """
+        Handle a patient mesh request. This method is called when a message is received on the
+        patient_mesh_request topic. The message is parsed and the mesh is loaded from the
+        patient data directory. The mesh is then sent back to the client on the patient_mesh_response
+        topic.
+
+        :param pub_socket: The publisher socket to use for sending the response.
+        :param data: The message data.
+        """
         with messages.MeshRequest.from_bytes(data) as request:
             print(f"patient_mesh_request: {request.meshId}")
 
@@ -99,12 +109,13 @@ class PatientLoaderServer:
             mesh_file = self.patient_data_dir / meshId
             mesh = pv.read(mesh_file)
 
+            # create the response message
             msg = messages.MeshResponse.new_message()
             msg.meshId = meshId
             msg.status = make_response(0, "ok")
             msg.mesh.vertices = mesh.points.flatten().tolist()
             # todo: flip winding order on client side, not server
-            msg.mesh.faces = mesh.faces.reshape((-1, 4))[..., 1:][..., [0, 2, 1]].flatten().tolist()
+            msg.mesh.faces = mesh.faces.reshape((-1, 4))[..., 1:][..., [0, 2, 1]].flatten().tolist() # flip winding order
 
             response_topic = "patient_mesh_response/"+meshId
 
@@ -113,6 +124,15 @@ class PatientLoaderServer:
 
 
     async def handle_patient_annotation_request(self, pub_socket, data):
+        """
+        Handle a patient annotation request. This method is called when a message is received on the
+        patient_anno_request topic. The message is parsed and the annotation is loaded from the
+        patient data directory. The annotation is then sent back to the client on the patient_anno_response
+        topic.
+        
+        :param pub_socket: The publisher socket to use for sending the response.
+        :param data: The message data.
+        """
         with messages.AnnoRequest.from_bytes(data) as request:
             print(f"patient_anno_request: {request.annoId}")
 
@@ -124,9 +144,10 @@ class PatientLoaderServer:
             with open(annotation_file, "r") as f:
                 annotation = json.load(f)
 
+            # get the control points
             controlPoints = annotation["markups"][0]["controlPoints"]
 
-
+            # create the response message
             msg = messages.AnnoResponse.new_message()
             msg.annoId = annoId
             msg.status = make_response(0, "ok")

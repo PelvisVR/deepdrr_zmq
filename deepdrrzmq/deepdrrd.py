@@ -229,6 +229,7 @@ class DeepDRRServer:
 
             projectorParams = command.projectorParams
 
+            # create the volumes
             self.volumes = []
             for volumeParams in projectorParams.volumes:
                 print(f"adding {volumeParams.which()} volume")
@@ -253,6 +254,7 @@ class DeepDRRServer:
                 else:
                     raise DeepDRRServerException(1, f"unknown volume type: {volumeParams.which()}")
             
+            # create the projector
             print(f"creating projector")
             deviceParams = projectorParams.device
             device = SimpleDevice(
@@ -298,8 +300,11 @@ class DeepDRRServer:
         """
 
         with messages.ProjectRequest.from_bytes(data) as request:
-            # print(f"received project request: {request.requestId} for projector {request.projectorId}")
+
+            # if the projector is not the same as the one in the request, send a response with a green loading image and request the projector params
             if self.projector is None or request.projectorId != self.projector_id:
+
+                # send a response with a green loading image
                 msg = messages.ProjectResponse.new_message()
                 msg.requestId = request.requestId
                 msg.projectorId = request.projectorId
@@ -316,12 +321,14 @@ class DeepDRRServer:
                 await pub_socket.send_multipart([b"/project_response/", msg.to_bytes()])
 
 
+                # request the projector params
                 msg = messages.ProjectorParamsRequest.new_message()
                 msg.projectorId = request.projectorId
                 await pub_socket.send_multipart([b"/projector_params_request/", msg.to_bytes()])
                 print(f"projector {request.projectorId} not found, requesting projector params")
                 return False
 
+            # create the camera projections
             camera_projections = []
             for camera_projection_struct in request.cameraProjections:
                 camera_projections.append(
@@ -335,6 +342,7 @@ class DeepDRRServer:
                     )
                 )
 
+            # set the world from anatomical transforms
             volumes_world_from_anatomical = []
             for transform in request.volumesWorldFromAnatomical:
                 volumes_world_from_anatomical.append(
@@ -349,13 +357,16 @@ class DeepDRRServer:
             else:
                 raise DeepDRRServerException(3, "volumes_world_from_anatomical length mismatch")
 
+            # run the projector
             raw_images = self.projector.project(
                 *camera_projections,
             )
 
+            # if there is only one image, wrap it in a list
             if len(camera_projections) == 1:
                 raw_images = [raw_images]
 
+            # send the response
             msg = messages.ProjectResponse.new_message()
             msg.requestId = request.requestId
             msg.projectorId = request.projectorId

@@ -220,6 +220,9 @@ class LoggerServer:
         await asyncio.gather(recorder_loop, status_loop)
 
     async def logger_server(self):
+        """
+        Server for logging data from the surgical simulation.
+        """
         sub_socket = self.context.socket(zmq.SUB)
         sub_socket.hwm = 10000
 
@@ -237,12 +240,14 @@ class LoggerServer:
                     latest_msgs = await zmq_poll_latest(sub_socket)
 
                     for topic, data in latest_msgs.items():
+                        # write to log file
                         msg = messages.LogEntry.new_message()
                         msg.logMonoTime = time.time()
                         msg.topic = topic
                         msg.data = data
                         log_file.write(msg.to_bytes())
 
+                        # process loggerd commands
                         if topic == b"/loggerd/stop/":
                             log_file.stop_session()
                         elif topic == b"/loggerd/start/":
@@ -256,6 +261,9 @@ class LoggerServer:
 
 
     async def status_server(self):
+        """
+        Server for sending the status of the logger.
+        """
         pub_socket = self.context.socket(zmq.PUB)
         pub_socket.hwm = 10000
 
