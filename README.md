@@ -4,6 +4,7 @@
 
 <!-- ZMQ/Capnp interface for [DeepDRR](https://github.com/arcadelab/deepdrr). -->
 Server docker container for the PelvisVR percutaneous pelvic surgery simulator.
+The PelvisVR client is located [here](https://git.lcsr.jhu.edu/pelvisvr/vr_surgical_room).
 
 The server is responsible for:
 - Loading patient mesh and annotation data (patientloaderd.py)
