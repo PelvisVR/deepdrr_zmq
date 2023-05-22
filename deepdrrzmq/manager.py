@@ -20,12 +20,12 @@ from .utils.zmq_util import *
 from .process import *
 
 
-def manager_prepare() -> None:
+def manager_prepare(managed_processes) -> None:
     for p in managed_processes.values():
         p.prepare()
 
 
-def manager_cleanup() -> None:
+def manager_cleanup(managed_processes) -> None:
     # send signals to kill all procs
     for p in managed_processes.values():
         p.stop(block=False)
@@ -37,7 +37,7 @@ def manager_cleanup() -> None:
     logging.info("everything is dead")
 
 
-def manager_thread() -> None:
+def manager_thread(managed_processes) -> None:
     logging.info("manager start")
 
     with zmq_no_linger_context(zmq.asyncio.Context()) as context:
@@ -59,38 +59,38 @@ def manager_thread() -> None:
             #         break
 
 
-def main() -> None:
-    manager_prepare()
+def main(managed_processes) -> None:
+    manager_prepare(managed_processes)
 
     # SystemExit on sigterm
     signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(1))
 
     try:
-        manager_thread()
+        manager_thread(managed_processes)
     except Exception:
         logging.exception("manager crashed")
         traceback.print_exc()
     finally:
-        manager_cleanup()
+        manager_cleanup(managed_processes)
 
 
 procs = [
-    PythonProcess("deepdrrd", "deepdrrzmq.deepdrrd", watchdog_max_dt=-1),
     PythonProcess("zmqproxyd", "deepdrrzmq.zmqproxyd", watchdog_max_dt=-1),
+    PythonProcess("deepdrrd", "deepdrrzmq.deepdrrd", watchdog_max_dt=-1),
     PythonProcess("patientloaderd", "deepdrrzmq.patientloaderd", watchdog_max_dt=-1),
     PythonProcess("timed", "deepdrrzmq.timed", watchdog_max_dt=-1),
     # PythonProcess("printd", "deepdrrzmq.printd", watchdog_max_dt=-1),
     PythonProcess("loggerd", "deepdrrzmq.loggerd", watchdog_max_dt=-1),
 ]
 
-managed_processes = {p.name: p for p in procs}
+main_procs = {p.name: p for p in procs}
 
 if __name__ == "__main__":
     # set log level
     logging.basicConfig(level=logging.DEBUG)
 
     try:
-        main()
+        main(main_procs)
     except Exception:
         logging.exception("manager main crashed")
         traceback.print_exc()
