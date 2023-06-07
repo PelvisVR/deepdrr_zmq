@@ -69,6 +69,28 @@ def mesh_msg_to_volume(meshParams):
     )
     return meshVolume
 
+def mesh_msg_to_mesh(meshParams):
+    """
+    Convert a mesh message to a mesh.
+
+    :param meshParams: The mesh to convert.
+    :return: The mesh.
+    """
+    primatives = []
+    for volumeMesh in meshParams.meshes:
+        vertices = np.array(volumeMesh.mesh.vertices).reshape(-1, 3) # Convert to Nx3 array
+        faces = np.array(volumeMesh.mesh.faces).reshape(-1, 3) # Convert to Nx3 array
+        faces = np.pad(faces, ((0, 0), (1, 0)), constant_values=3) # Add face count to front of each face
+        faces = faces.flatten() # Flatten to 1D array
+        if len(faces) == 0:
+            continue
+        surface = pv.PolyData(vertices, faces) # Create pyvista surface
+        prim = deepdrr.Primitive(volumeMesh.material, volumeMesh.density, surface)
+        primatives.append(prim)
+
+    mesh = deepdrr.Mesh(primatives)
+    return mesh
+
 def nifti_msg_to_volume(niftiParams, patient_data_dir):
     """
     Convert a nifti message to a volume.
@@ -236,7 +258,8 @@ class DeepDRRServer:
                 if volumeParams.which() == "nifti":
                     self.volumes.append(nifti_msg_to_volume(volumeParams.nifti, self.patient_data_dir))
                 elif volumeParams.which() == "mesh":
-                    self.volumes.append(mesh_msg_to_volume(volumeParams.mesh))
+                    self.volumes.append(mesh_msg_to_mesh(volumeParams.mesh))
+                    # self.volumes.append(mesh_msg_to_volume(volumeParams.mesh))
                 elif volumeParams.which() == "instrument":
                     instrumentParams = volumeParams.instrument
                     known_instruments = {
