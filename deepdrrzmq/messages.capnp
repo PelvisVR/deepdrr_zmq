@@ -203,3 +203,11 @@ struct LoggerStatus {
     recording @0 :Bool; # Whether the logger is recording
     sessionId @1 :Text; # Session id of the logger
 }
+
+#06/12 -webIU
+struct UIControlSetting  {
+    patientMaterial @0 :Int32; # Skin opaque/transparent  
+    annotationError @1 :List(Text); # Session id of the logger
+    corridorIndicator @2 :Bool; # All corridor indicator bool
+    carmIndicator @3 :Bool; # C-arm indicator bool
+}
