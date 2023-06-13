@@ -186,6 +186,7 @@ struct SycnedSetting {
         long @6 :Int64;
         string @7 :Text;
         arm @8 :CArmSettings;
+        uiControl @9 :UIControlSetting;
     }
 }
 
