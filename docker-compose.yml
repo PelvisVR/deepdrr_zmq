@@ -9,13 +9,20 @@ services:
       - "40102:40102"
     environment:
       - PATIENT_DATA_DIR=/patientdata
+      - LOG_DIR=/logdata
       - DEEPDRR_DATA_DIR=/deepdrrcache
     # depends_on:
+    #   - pyradonc
+    #   - usdzconvert
     volumes:
       # Patient data
       - type: bind
         source: ${DOCKER_PATIENT_DATA_DIR}
         target: /patientdata
+        read_only: true
+      - type: bind
+        source: ${DOCKER_LOG_DIR}
+        target: /logdata
         read_only: true
       # DeepDRR Cache Volume
       - type: volume

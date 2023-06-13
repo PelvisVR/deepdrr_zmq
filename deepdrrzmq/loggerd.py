@@ -290,12 +290,15 @@ def main(
         rep_port=typer.Argument(40100),
         pub_port=typer.Argument(40101),
         sub_port=typer.Argument(40102),
-        log_root_path=typer.Argument("pvrlogs")
+        # log_root_path=typer.Argument("pvrlogs")
 ):
 
     print(f"rep_port: {rep_port}")
     print(f"pub_port: {pub_port}")
     print(f"sub_port: {sub_port}")
+
+    log_root_path = Path("pvrlogs") 
+    log_root_path = Path(os.environ.get("PATIENT_DATA_DIR", log_root_path))
     print(f"log_root_path: {log_root_path}")
 
     with zmq_no_linger_context(zmq.asyncio.Context()) as context:
