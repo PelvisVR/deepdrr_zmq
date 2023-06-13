@@ -80,6 +80,7 @@ def mesh_msg_to_mesh(meshParams):
     for volumeMesh in meshParams.meshes:
         vertices = np.array(volumeMesh.mesh.vertices).reshape(-1, 3) # Convert to Nx3 array
         faces = np.array(volumeMesh.mesh.faces).reshape(-1, 3) # Convert to Nx3 array
+        faces = faces[..., [0, 2, 1]] # Flip winding order
         faces = np.pad(faces, ((0, 0), (1, 0)), constant_values=3) # Add face count to front of each face
         faces = faces.flatten() # Flatten to 1D array
         if len(faces) == 0:
