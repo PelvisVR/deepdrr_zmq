@@ -298,7 +298,7 @@ def main(
     print(f"sub_port: {sub_port}")
 
     log_root_path = Path("pvrlogs") 
-    log_root_path = Path(os.environ.get("PATIENT_DATA_DIR", log_root_path))
+    log_root_path = Path(os.environ.get("LOG_DIR", log_root_path))
     print(f"log_root_path: {log_root_path}")
 
     with zmq_no_linger_context(zmq.asyncio.Context()) as context:
