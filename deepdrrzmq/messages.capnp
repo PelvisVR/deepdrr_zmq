@@ -212,5 +212,8 @@ struct UIControlSetting  {
     corridorIndicator @2 :Bool; # All corridor indicator bool
     carmIndicator @3 :Bool; # C-arm indicator bool
 }
+struct temptrialforhan  {
+    trial @0 :Bool; # temp 
+}
 
 # hello
