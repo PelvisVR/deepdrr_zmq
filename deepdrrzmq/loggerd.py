@@ -21,7 +21,7 @@ app = typer.Typer(pretty_exceptions_show_locals=False)
 
 class LogWriter:
     """
-    Stream wrapper for writing to a log file.
+    Stream wrapper for writing to a log file.5
     """
     def __init__(self, fileobj):
         self.filestream = fileobj
