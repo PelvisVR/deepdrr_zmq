@@ -211,4 +211,6 @@ struct UIControlSetting  {
     annotationError @1 :List(Text); # Session id of the logger
     corridorIndicator @2 :Bool; # All corridor indicator bool
     carmIndicator @3 :Bool; # C-arm indicator bool
+    webcorridorerrorselect @4 :Bool;#corridorErrorWebControl
+    webcorridorselection @5 :Int32 ;#the index of web selection
 }
