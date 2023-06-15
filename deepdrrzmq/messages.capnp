@@ -186,7 +186,9 @@ struct SycnedSetting {
         long @6 :Int64;
         string @7 :Text;
         arm @8 :CArmSettings;
-        uiControl @9 :UIControlSetting;
+        uiControl @9 :UIControlSetting;#Need add
+        temptrial @10:Temptrialforhan;
+
     }
 }
 
@@ -214,8 +216,12 @@ struct UIControlSetting  {
 }
 struct Temptrialforhan  {
     trial @0 :Bool; # temp 
+    trial1 @1 :Int32;
 }
 # Run local(terminal) after change this 
 # .\capnp_compile.cmd
 
-#go to 
+#go to C:\Users\hzhan\OneDrive - Johns Hopkins\Documents\GitHub\vr_surgical_room\Assets\Scripts\Generated\messages.capnp.cs
+
+
+# add setting :union
