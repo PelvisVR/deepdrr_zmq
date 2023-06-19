@@ -213,15 +213,8 @@ struct UIControlSetting  {
     annotationError @1 :List(Text); # Session id of the logger
     corridorIndicator @2 :Bool; # All corridor indicator bool
     carmIndicator @3 :Bool; # C-arm indicator bool
+    webcorridorerrorselect @4 :Bool;#corridorErrorWebControl
+    webcorridorselection @5 :Int32 ;#the index of web selection
+    flippatient @6 :Bool; # Flip patient bool
+    viewIndicatorselfselect @7 :Bool; # View indicator self select bool
 }
-struct Temptrialforhan  {
-    trial @0 :Bool; # temp 
-    trial1 @1 :Int32;
-}
-# Run local(terminal) after change this 
-# .\capnp_compile.cmd
-
-#go to C:\Users\hzhan\OneDrive - Johns Hopkins\Documents\GitHub\vr_surgical_room\Assets\Scripts\Generated\messages.capnp.cs
-
-
-# add setting :union
