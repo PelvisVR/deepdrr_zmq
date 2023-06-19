@@ -86,7 +86,7 @@ class LogReplayServer:
         # get most recent folder in pvrlogs
         folder = max(Path(self.log_root_path).glob("*"), key=os.path.getmtime)
         print(f"replaying folder {folder}")
-        files = Path(folder).glob("*.pvrlog")
+        files = Path(folder).glob("*    ")
         listfiles = list(files)
         sortedfiles = sorted(listfiles, key=lambda x: x.stem.split("--")[-1])
         
