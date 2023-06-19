@@ -213,4 +213,6 @@ struct UIControlSetting  {
     carmIndicator @3 :Bool; # C-arm indicator bool
     webcorridorerrorselect @4 :Bool;#corridorErrorWebControl
     webcorridorselection @5 :Int32 ;#the index of web selection
+    flippatient @6 :Bool; # Flip patient bool
+    viewIndicatorselfselect @7 :Bool; # View indicator self select bool
 }
