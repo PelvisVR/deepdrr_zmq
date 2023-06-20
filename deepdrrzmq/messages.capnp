@@ -187,8 +187,6 @@ struct SycnedSetting {
         string @7 :Text;
         arm @8 :CArmSettings;
         uiControl @9 :UIControlSetting;#Need add
-        temptrial @10:Temptrialforhan;
-
     }
 }
 
