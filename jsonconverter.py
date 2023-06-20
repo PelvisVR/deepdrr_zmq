@@ -2,18 +2,19 @@ import json
 from pathlib import Path
 
 import capnp
-from deepdrrzmq import messages
 
-
+messages = capnp.load("deepdrr_zmq/deepdrrzmq/messages.capnp")
 def extract_topic_data_from_log(log_file):
     entries = messages.LogEntry.read_multiple_bytes(log_file.read_bytes())
     topic_data = []
     for entry in entries:
         topic = entry.topic.decode('utf-8')
-        data = entry.data.decode('utf-8')
-        topic_data.append({'topic': topic, 'data': data})
-    return topic_data
+        # data = entry.data.decode('ascii')
+        # topic_data.append({'topic': topic, 'data': data})
+        print(topic)
+        topic_data.append({'topic': topic})
 
+    return topic_data
 
 def convert_pvrlog_to_json(log_folder):
     log_folder_path = Path(log_folder)
@@ -29,5 +30,6 @@ def convert_pvrlog_to_json(log_folder):
 # log_folder = input("Enter the folder path containing .pvrlog files: ")
 # convert_pvrlog_to_json(log_folder)
 if __name__ == '__main__':
-    log_folder = input("Enter the folder path containing .pvrlog files: ")
+    # log_folder = input("Enter the folder path containing .pvrlog files: ")
+    log_folder = "C:/vrplog/gn6w7q6bvwivsb93--2023-06-20-00-21-42"
     convert_pvrlog_to_json(log_folder)
