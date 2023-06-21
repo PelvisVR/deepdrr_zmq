@@ -24,4 +24,5 @@ dependencies:
       - tqdm
       - ipywidgets
       - jupyter
+      - more_itertools
       

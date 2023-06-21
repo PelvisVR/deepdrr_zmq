@@ -216,3 +216,34 @@ struct UIControlSetting  {
     flippatient @6 :Bool; # Flip patient bool
     viewIndicatorselfselect @7 :Bool; # View indicator self select bool
 }
+
+struct LogFile {
+    id @0 :Text; # Id of the log file
+    mtime @1 :Float64; # Last modified time of the log file
+}
+
+struct LogList {
+    logs @0 :List(LogFile);
+}
+
+# Load log (logid, autoplay, start_time, loop)
+struct LoadLogRequest {
+    id @0 :Text; # Id of the log file
+    autoplay @1 :Bool; # Whether to autoplay the log
+    startTime @2 :Float64; # Start time of the log
+    loop @3 :Bool; # Whether to loop the log
+}
+
+
+# Publishes: (don't replay these messages)
+# Current state /replayd/state 
+# Current time /replayd/time
+# Current logid /replayd/logid
+struct ReplayerStatus {
+    playing @0 :Bool; # State of the replayer
+    time @1 :Float64; # Current time of the replayer
+    logid @2 :Text; # Current logid of the replayer
+    startTime @3 :Float64; # Start time of the log
+    endTime @4 :Float64; # End time of the log
+    loop @5 :Bool; # Whether the log is looping
+}

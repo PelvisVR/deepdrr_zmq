@@ -13,7 +13,7 @@ procs = [
     # PythonProcess("timed", "deepdrrzmq.timed", watchdog_max_dt=-1),
     # PythonProcess("printd", "deepdrrzmq.printd", watchdog_max_dt=-1),
     # PythonProcess("loggerd", "deepdrrzmq.loggerd", watchdog_max_dt=-1),
-    PythonProcess("logreplay", "deepdrrzmq.logreplay", watchdog_max_dt=-1),
+    PythonProcess("replayd", "deepdrrzmq.replayd", watchdog_max_dt=-1),
 ]
 
 replay_procs = {p.name: p for p in procs}

@@ -4,3 +4,4 @@ pycapnp
 typer
 scipy
 joblib
+more_itertools
