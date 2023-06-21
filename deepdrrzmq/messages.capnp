@@ -14,6 +14,14 @@ struct OptionalFloat32 {
     }
 }
 
+struct BoolValue {
+    value @0 :Bool;
+}
+
+struct Float32Value {
+    value @0 :Float32;
+}
+
 struct Time {
     millis @0 :Float64;
 }
@@ -228,7 +236,7 @@ struct LogList {
 
 # Load log (logid, autoplay, start_time, loop)
 struct LoadLogRequest {
-    id @0 :Text; # Id of the log file
+    logId @0 :Text; # Id of the log file
     autoplay @1 :Bool; # Whether to autoplay the log
     startTime @2 :Float64; # Start time of the log
     loop @3 :Bool; # Whether to loop the log
@@ -242,7 +250,7 @@ struct LoadLogRequest {
 struct ReplayerStatus {
     playing @0 :Bool; # State of the replayer
     time @1 :Float64; # Current time of the replayer
-    logid @2 :Text; # Current logid of the replayer
+    logId @2 :Text; # Current logid of the replayer
     startTime @3 :Float64; # Start time of the log
     endTime @4 :Float64; # End time of the log
     loop @5 :Bool; # Whether the log is looping

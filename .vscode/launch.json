@@ -10,6 +10,13 @@
             "request": "launch",
             "module": "deepdrrzmq.manager",
             "justMyCode": false
+        },
+        {
+            "name": "replaymgr",
+            "type": "python",
+            "request": "launch",
+            "module": "deepdrrzmq.replaymanager",
+            "justMyCode": false
         }
     ]
 }

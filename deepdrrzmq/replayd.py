@@ -19,8 +19,8 @@ from .utils.server_util import make_response, DeepDRRServerException, messages
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
 excluded_prefixes = [
-    "/loggerd/",
-    "/replayd/",
+    b"/loggerd/",
+    b"/replayd/",
 ]
 
 
@@ -41,10 +41,11 @@ class LogReplayer:
         if self._allfiles is None:
             listfiles = list(Path(self.logfolderpath).glob("*.pvrlog"))
             self._allfiles = sorted(listfiles, key=lambda x: int(x.stem.split("--")[-1]))
+            print(f"allfiles: {self._allfiles} {self.logfolderpath}")
         return self._allfiles
 
     @property
-    def loop(self, state):
+    def loop(self):
         return self._loop
     
     @loop.setter
@@ -55,7 +56,8 @@ class LogReplayer:
     def starttime(self):
         if self._starttime is None:
             firstfile = self.allfiles[0]
-            self._starttime = next(messages.LogEntry.read_multiple_bytes(firstfile.read_bytes()))
+            firstentry = next(messages.LogEntry.read_multiple_bytes(firstfile.read_bytes()))
+            self._starttime = firstentry.logMonoTime
         return self._starttime
 
     @property
@@ -75,6 +77,9 @@ class LogReplayer:
     
     @current_time.setter
     def current_time(self, time):
+        # if not float, throw exception
+        if type(time) != float:
+            raise ValueError(f"current_time must be float, not {type(time)}")
         self._current_time = time
 
     def __iter__(self):
@@ -106,6 +111,7 @@ class LogReplayer:
             return msg
         
     def seek_time(self, time):
+        print(f"seek_time: {time} current_time: {self.current_time}")
         if time < self.current_time:
             self.next_file_idx = 0
             self.current_entryiter = None
@@ -180,20 +186,23 @@ class LogReplayServer:
                         print("listrequest")
                     elif topic == b"/replayd/in/load/":
                         with messages.LoadLogRequest.from_bytes(data) as msg:
-                            self.log_id = data.decode()
-                            self.log_replayer = LogReplayer(Path(self.log_root_path) / data.decode())
+                            self.log_id = msg.logId
+                            self.log_replayer = LogReplayer(Path(self.log_root_path) / msg.logId)
                             self.log_replayer.seek_time(msg.startTime)
                             self.log_replayer.loop = msg.loop
                             self.play_state = msg.autoplay
                     elif topic == b"/replayd/in/loop/":
-                        with messages.Bool.from_bytes(data) as msg:
+                        with messages.BoolValue.from_bytes(data) as msg:
                             self.log_replayer.loop = msg.value
+                        print(f"loop {self.log_replayer.loop}")
                     elif topic == b"/replayd/in/start/":
                         self.play_state = True
+                        print("start")
                     elif topic == b"/replayd/in/stop/":
                         self.play_state = False
+                        print("stop")
                     elif topic == b"/replayd/in/scrub/":
-                        with messages.Float32.from_bytes(data) as msg:
+                        with messages.Float32Value.from_bytes(data) as msg:
                             prev_play_state = self.play_state
                             self.play_state = False
                             self.log_replayer.seek_time(msg.value)
@@ -220,12 +229,12 @@ class LogReplayServer:
             msg = messages.ReplayerStatus.new_message()
             msg.playing = self.play_state
             msg.time = self.log_replayer.current_time if self.log_replayer is not None else 0
-            msg.logid = self.log_id if self.log_id is not None else ""
+            msg.logId = self.log_id if self.log_id is not None else ""
             msg.startTime = self.log_replayer.starttime if self.log_replayer is not None else 0
             msg.endTime = self.log_replayer.endtime if self.log_replayer is not None else 0
             msg.loop = self.log_replayer.loop if self.log_replayer is not None else False
             await pub_socket.send_multipart([b"/replayd/status/", msg.to_bytes()])
-            print(f"replayd status: {msg.playing} {msg.time} {msg.logid} {msg.startTime} {msg.endTime} {msg.loop}")
+            print(f"replayd status: {msg.playing} {msg.time} {msg.logId} {msg.startTime} {msg.endTime} {msg.loop}")
 
     async def replay_loop(self):
         pub_socket = self.context.socket(zmq.PUB)
@@ -237,7 +246,6 @@ class LogReplayServer:
         i = 0
         while True:
             while self.play_state and self.log_replayer is not None:
-                print(f"replayd: {self.log_replayer.current_time}")
                 try:
                     logentry = next(self.log_replayer)
 
@@ -246,17 +254,22 @@ class LogReplayServer:
                         continue
 
                     # sleep until it's time to send the message
-                    while time.time() - self.log_time_offset < logentry.logMonoTime:
+                    while self.log_time_offset is not None and time.time() - self.log_time_offset < logentry.logMonoTime:
                         await asyncio.sleep(0.001)
+
+                    if not (self.play_state and self.log_replayer is not None):
+                        break
                     
                     await pub_socket.send_multipart([logentry.topic, logentry.data])
 
                     i+= 1
-                    if i % 1000 == 0:
-                        print(f"sent {i} messages")
+                    if i % 100 == 0:
+                        # print(f"sent {i} messages")
+                        print(f"playing, current time: {self.log_replayer.current_time}")
+
                 except StopIteration:
                     self.play_state = False
-                await asyncio.sleep()
+                await asyncio.sleep(0)
             await asyncio.sleep(0.01)
             
 
