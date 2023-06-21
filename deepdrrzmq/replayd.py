@@ -167,6 +167,7 @@ class LogReplayServer:
         await asyncio.gather(
             self.command_loop(),
             self.status_loop(),
+            self.loglist_loop(),
             self.replay_loop(),
         )
 
@@ -187,16 +188,16 @@ class LogReplayServer:
                 latest_msgs = await zmq_poll_latest(sub_socket)
 
                 for topic, data in latest_msgs.items():
-                    if topic == b"/replayd/in/listrequest/":
-                        self.invalidate_pathes_sorted_mtime()
-                        msg = messages.LogList.new_message()
-                        msg.init('logs', len(self.pathes_sorted_mtime))
-                        for i, path in enumerate(self.pathes_sorted_mtime):
-                            msg.logs[i].id = path.name
-                            msg.logs[i].mtime = int(os.path.getmtime(path))
-                        await pub_socket.send_multipart([b"/replayd/list/", msg.to_bytes()])
-                        print("listrequest")
-                    elif topic == b"/replayd/in/load/":
+                    # if topic == b"/replayd/in/listrequest/":
+                    #     self.invalidate_pathes_sorted_mtime()
+                    #     msg = messages.LogList.new_message()
+                    #     msg.init('logs', len(self.pathes_sorted_mtime))
+                    #     for i, path in enumerate(self.pathes_sorted_mtime):
+                    #         msg.logs[i].id = path.name
+                    #         msg.logs[i].mtime = int(os.path.getmtime(path))
+                    #     await pub_socket.send_multipart([b"/replayd/list/", msg.to_bytes()])
+                    #     print("listrequest")
+                    if topic == b"/replayd/in/load/":
                         self.play_state = False
                         with messages.LoadLogRequest.from_bytes(data) as msg:
                             if msg.logId not in [p.name for p in self.pathes_sorted_mtime]:
@@ -258,6 +259,22 @@ class LogReplayServer:
             await pub_socket.send_multipart([b"/replayd/status/", msg.to_bytes()])
             print(f"replayd status: {self.playback_time=}")
             # print(f"replayd status: {self.playback_time=} {msg.playing} {msg.time} {msg.logId} {msg.startTime} {msg.endTime} {msg.loop} {self.log_replayer=} {self.log_time_offset=}")
+
+    async def loglist_loop(self):
+        pub_socket = self.context.socket(zmq.PUB)
+        pub_socket.hwm = 10000
+
+        pub_socket.connect(f"tcp://localhost:{self.pub_port}")
+
+        while True:
+            await asyncio.sleep(5)
+            self.invalidate_pathes_sorted_mtime()
+            msg = messages.LogList.new_message()
+            msg.init('logs', len(self.pathes_sorted_mtime))
+            for i, path in enumerate(self.pathes_sorted_mtime):
+                msg.logs[i].id = path.name
+                msg.logs[i].mtime = int(os.path.getmtime(path))
+            await pub_socket.send_multipart([b"/replayd/list/", msg.to_bytes()])
 
     async def replay_loop(self):
         pub_socket = self.context.socket(zmq.PUB)
