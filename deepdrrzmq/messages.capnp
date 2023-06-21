@@ -18,8 +18,8 @@ struct BoolValue {
     value @0 :Bool;
 }
 
-struct Float32Value {
-    value @0 :Float32;
+struct Float64Value {
+    value @0 :Float64;
 }
 
 struct Time {
@@ -238,8 +238,7 @@ struct LogList {
 struct LoadLogRequest {
     logId @0 :Text; # Id of the log file
     autoplay @1 :Bool; # Whether to autoplay the log
-    startTime @2 :Float64; # Start time of the log
-    loop @3 :Bool; # Whether to loop the log
+    loop @2 :Bool; # Whether to loop the log
 }
 
 
