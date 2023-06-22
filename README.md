@@ -27,6 +27,7 @@ The server is responsible for:
 ```
 # .env
 DOCKER_PATIENT_DATA_DIR="C:\path\to\patient\data"
+DOCKER_LOG_DIR="D:/pvrlogs/"
 ```
 
 - cd to the root directory of this repository
