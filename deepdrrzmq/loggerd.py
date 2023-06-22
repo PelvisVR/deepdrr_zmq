@@ -212,7 +212,7 @@ class LoggerServer:
         self.pub_port = pub_port
         self.sub_port = sub_port
         self.log_root_path = log_root_path
-        self.log_recorder = LogRecorder(log_root_path, maxcount = 1e15, maxsize = 1e6)
+        self.log_recorder = LogRecorder(log_root_path, maxcount = 1e15, maxsize = 100e6)
 
     async def start(self):
         recorder_loop = self.logger_server()

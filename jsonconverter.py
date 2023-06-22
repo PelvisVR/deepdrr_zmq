@@ -14,7 +14,7 @@ def extract_topic_data_from_log(log_file):
         msgdict = {'topic': topic}
         file_name = os.path.splitext(log_file.name)[0] 
         file_number = file_name.split("--")[-1] 
-        print(file_number + ' file '+str(len(topic_data))+' '+topic)#for debug
+        # print(file_number + ' file '+str(len(topic_data))+' '+topic)#for debug
         if topic not in unique_topics:  # Add unique topics to the list
             unique_topics.append(topic)
 
@@ -69,5 +69,5 @@ def convert_pvrlog_to_json(log_folder):
 
 if __name__ == '__main__':
     # log_folder = input("Enter the folder path containing .pvrlog files: ")
-    log_folder = "C:/vrplog/kzah4coknikhy46v--2023-06-20-04-34-08"
+    log_folder = "C:/vrplog/7mfiyniy548ldjn8--2023-06-20-02-38-31"
     convert_pvrlog_to_json(log_folder)
