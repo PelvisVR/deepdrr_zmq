@@ -115,8 +115,11 @@ class LogReplayer:
             self.current_entryiter = None
         self.next_buffered = None
         
-        while self.current_time < time:
-            next(self) # TODO: this seeks one past
+        try:
+            while self.current_time < time:
+                next(self) # TODO: this seeks one past
+        except StopIteration:
+            pass
         self.current_time = time
 
 
@@ -135,6 +138,7 @@ class LogReplayServer:
         self.playback_time = None
 
         self._pathes_sorted_mtime = None
+        self.enabled = False
 
     @property
     def pathes_sorted_mtime(self):
@@ -169,6 +173,7 @@ class LogReplayServer:
             self.status_loop(),
             self.loglist_loop(),
             self.replay_loop(),
+            self.blocker_loop()
         )
 
     async def command_loop(self):
@@ -187,41 +192,51 @@ class LogReplayServer:
             try:
                 latest_msgs = await zmq_poll_latest(sub_socket)
 
-                for topic, data in latest_msgs.items():
-                    # if topic == b"/replayd/in/listrequest/":
-                    #     self.invalidate_pathes_sorted_mtime()
-                    #     msg = messages.LogList.new_message()
-                    #     msg.init('logs', len(self.pathes_sorted_mtime))
-                    #     for i, path in enumerate(self.pathes_sorted_mtime):
-                    #         msg.logs[i].id = path.name
-                    #         msg.logs[i].mtime = int(os.path.getmtime(path))
-                    #     await pub_socket.send_multipart([b"/replayd/list/", msg.to_bytes()])
-                    #     print("listrequest")
-                    if topic == b"/replayd/in/load/":
-                        self.play_state = False
-                        with messages.LoadLogRequest.from_bytes(data) as msg:
-                            if msg.logId not in [p.name for p in self.pathes_sorted_mtime]:
-                                raise DeepDRRServerException(400, f"log {msg.logId} not found")
-                            self.log_id = msg.logId
-                            self.log_replayer = LogReplayer(Path(self.log_root_path) / msg.logId)
-                            # self.log_replayer.seek_time(msg.startTime)
-                            # self.log_replayer.loop = msg.loop
-                            self.loop = msg.loop
-                            self.play_state = msg.autoplay
-                    elif topic == b"/replayd/in/loop/":
-                        with messages.BoolValue.from_bytes(data) as msg:
-                            # self.log_replayer.loop = msg.value
-                            self.loop = msg.value
-                        print(f"loop {self.loop}")
-                    elif topic == b"/replayd/in/start/":
-                        self.play_state = True
-                        print("start")
-                    elif topic == b"/replayd/in/stop/":
-                        self.play_state = False
-                        print("stop")
-                    elif topic == b"/replayd/in/scrub/":
-                        with messages.Float64Value.from_bytes(data) as msg:
-                            self.seek_time(msg.value)
+                if b"/replayd/in/enable/" in latest_msgs:
+                    self.enabled = True
+                    print("enable")
+
+                if not self.enabled:
+                    await asyncio.sleep(0.1)
+                    continue
+                
+                if b"/replayd/in/disable/" in latest_msgs:
+                    self.enabled = False
+                    self.play_state = False
+                    print("disable")
+
+                if b"/replayd/in/load/" in latest_msgs:
+                    data = latest_msgs[b"/replayd/in/load/"]
+                    self.play_state = False
+                    with messages.LoadLogRequest.from_bytes(data) as msg:
+                        if msg.logId not in [p.name for p in self.pathes_sorted_mtime]:
+                            raise DeepDRRServerException(400, f"log {msg.logId} not found")
+                        self.log_id = msg.logId
+                        self.log_replayer = LogReplayer(Path(self.log_root_path) / msg.logId)
+                        # self.log_replayer.seek_time(msg.startTime)
+                        # self.log_replayer.loop = msg.loop
+                        self.loop = msg.loop
+                        self.play_state = msg.autoplay
+
+                if b"/replayd/in/loop/" in latest_msgs:
+                    data = latest_msgs[b"/replayd/in/loop/"]
+                    with messages.BoolValue.from_bytes(data) as msg:
+                        # self.log_replayer.loop = msg.value
+                        self.loop = msg.value
+                    print(f"loop {self.loop}")
+
+                if b"/replayd/in/start/" in latest_msgs:
+                    self.play_state = True
+                    print("start")
+
+                if b"/replayd/in/stop/" in latest_msgs:
+                    self.play_state = False
+                    print("stop")
+
+                if b"/replayd/in/scrub/" in latest_msgs:
+                    data = latest_msgs[b"/replayd/in/scrub/"]
+                    with messages.Float64Value.from_bytes(data) as msg:
+                        self.seek_time(msg.value)
 
                 await asyncio.sleep(0.001)
 
@@ -237,17 +252,17 @@ class LogReplayServer:
         self.play_state = prev_play_state
 
     async def status_loop(self):
-        """
-        Server for sending the status of the logger.
-        """
         pub_socket = self.context.socket(zmq.PUB)
         pub_socket.hwm = 10000
 
         pub_socket.connect(f"tcp://localhost:{self.pub_port}")
 
         while True:
-            await asyncio.sleep(0.1)
+            if not self.enabled:
+                await asyncio.sleep(2)
+            await asyncio.sleep(0.2)
             msg = messages.ReplayerStatus.new_message()
+            msg.enabled = self.enabled
             msg.playing = self.play_state
             msg.time = self.playback_time if self.playback_time is not None else 0
             # msg.time = self.log_replayer.current_time if self.log_replayer is not None else 0
@@ -257,8 +272,10 @@ class LogReplayServer:
             msg.loop = self.loop
             # msg.loop = self.log_replayer.loop if self.log_replayer is not None else False
             await pub_socket.send_multipart([b"/replayd/status/", msg.to_bytes()])
-            print(f"replayd status: {self.playback_time=}")
-            # print(f"replayd status: {self.playback_time=} {msg.playing} {msg.time} {msg.logId} {msg.startTime} {msg.endTime} {msg.loop} {self.log_replayer=} {self.log_time_offset=}")
+
+            if self.enabled:
+                print(f"replayd status: {self.playback_time=}")
+                # print(f"replayd status: {self.playback_time=} {msg.playing} {msg.time} {msg.logId} {msg.startTime} {msg.endTime} {msg.loop} {self.log_replayer=} {self.log_time_offset=}")
 
     async def loglist_loop(self):
         pub_socket = self.context.socket(zmq.PUB)
@@ -268,13 +285,14 @@ class LogReplayServer:
 
         while True:
             await asyncio.sleep(5)
-            self.invalidate_pathes_sorted_mtime()
-            msg = messages.LogList.new_message()
-            msg.init('logs', len(self.pathes_sorted_mtime))
-            for i, path in enumerate(self.pathes_sorted_mtime):
-                msg.logs[i].id = path.name
-                msg.logs[i].mtime = int(os.path.getmtime(path))
-            await pub_socket.send_multipart([b"/replayd/list/", msg.to_bytes()])
+            if self.enabled:
+                self.invalidate_pathes_sorted_mtime()
+                msg = messages.LogList.new_message()
+                msg.init('logs', len(self.pathes_sorted_mtime))
+                for i, path in enumerate(self.pathes_sorted_mtime):
+                    msg.logs[i].id = path.name
+                    msg.logs[i].mtime = int(os.path.getmtime(path))
+                await pub_socket.send_multipart([b"/replayd/list/", msg.to_bytes()])
 
     async def replay_loop(self):
         pub_socket = self.context.socket(zmq.PUB)
@@ -289,6 +307,8 @@ class LogReplayServer:
             return self.play_state and self.log_replayer is not None
         
         while True:
+            while not self.enabled:
+                await asyncio.sleep(1)
             while play_condition():
                 try:
                     logentry = next(self.log_replayer)
@@ -324,6 +344,23 @@ class LogReplayServer:
                 await asyncio.sleep(0)
             await asyncio.sleep(0.01)
             
+    async def blocker_loop(self):
+        pub_socket = self.context.socket(zmq.PUB)
+        pub_socket.hwm = 10000
+
+        pub_socket.connect(f"tcp://localhost:{self.pub_port}")
+
+        block_list = [
+            "deepdrrd",
+            "timed"
+        ]
+
+        while True:
+            while not self.enabled:
+                await asyncio.sleep(1)
+            for block in block_list:
+                await pub_socket.send_multipart([f"/{block}/in/block/".encode(), b""])
+            await asyncio.sleep(5)
 
 
     def __enter__(self):

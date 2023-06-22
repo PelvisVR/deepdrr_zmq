@@ -153,6 +153,8 @@ class DeepDRRServer:
         self.pub_port = pub_port
         self.sub_port = sub_port
 
+        self.disable_until = 0
+
         self.projector = None
         self.projector_id = ""
 
@@ -189,22 +191,36 @@ class DeepDRRServer:
 
         sub_socket.setsockopt(zmq.SUBSCRIBE, b"project_request/")
         sub_socket.setsockopt(zmq.SUBSCRIBE, b"projector_params_response/")
+        sub_socket.setsockopt(zmq.SUBSCRIBE, b"/deepdrrd/in/")
 
         while True:
+
             try:
                 latest_msgs = await zmq_poll_latest(sub_socket)
 
-                for topic, data in latest_msgs.items():
-                    if topic == b"project_request/":
-                        if await self.handle_project_request(pub_socket, data):
-                            if (f:=self.fps()) is not None:
-                                print(f"DRR project rate: {f:>5.2f} frames per second")
-                    elif topic == b"projector_params_response/":
-                        await self.handle_projector_params_response(data)
+                if b"/deepdrrd/in/block/" in latest_msgs:
+                    self.disable_until = time.time() + 10
+
+                if time.time() < self.disable_until:
+                    await asyncio.sleep(1)
+                    print("deepdrrd disabled")
+                    continue
+
+                if b"project_request/" in latest_msgs:
+                    if await self.handle_project_request(pub_socket, latest_msgs[b"project_request/"]):
+                        if (f:=self.fps()) is not None:
+                            print(f"DRR project rate: {f:>5.2f} frames per second")
+
+                if b"projector_params_response/" in latest_msgs:
+                    try:
+                        await self.handle_projector_params_response(latest_msgs[b"projector_params_response/"])
+                    except Exception as e:
+                        raise DeepDRRServerException(1, f"error creating projector: \n{e}")
 
             except DeepDRRServerException as e:
                 print(f"server exception: {e}")
                 await pub_socket.send_multipart([b"/server_exception/", e.status_response().to_bytes()])
+
 
     def __enter__(self):
         return self

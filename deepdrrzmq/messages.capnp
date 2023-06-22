@@ -247,10 +247,11 @@ struct LoadLogRequest {
 # Current time /replayd/time
 # Current logid /replayd/logid
 struct ReplayerStatus {
-    playing @0 :Bool; # State of the replayer
-    time @1 :Float64; # Current time of the replayer
-    logId @2 :Text; # Current logid of the replayer
-    startTime @3 :Float64; # Start time of the log
-    endTime @4 :Float64; # End time of the log
-    loop @5 :Bool; # Whether the log is looping
+    enabled @0 :Bool; # Whether the replayer is enabled
+    playing @1 :Bool; # State of the replayer
+    time @2 :Float64; # Current time of the replayer
+    logId @3 :Text; # Current logid of the replayer
+    startTime @4 :Float64; # Start time of the log
+    endTime @5 :Float64; # End time of the log
+    loop @6 :Bool; # Whether the log is looping
 }
