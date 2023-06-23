@@ -69,5 +69,5 @@ def convert_pvrlog_to_json(log_folder):
 
 if __name__ == '__main__':
     # log_folder = input("Enter the folder path containing .pvrlog files: ")
-    log_folder = "C:/vrplog/7mfiyniy548ldjn8--2023-06-20-02-38-31"
+    log_folder = "C:/vrplog/3cul258d05dfgfcz--2023-06-22-20-05-55"
     convert_pvrlog_to_json(log_folder)
