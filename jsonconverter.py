@@ -20,17 +20,55 @@ def extract_topic_data_from_log(log_file):
 
         if topic.startswith("/mp/transform/"):
             with messages.SyncedTransformUpdate.from_bytes(entry.data) as transform:
-                transform_dict = {}
-                transform_dict['timestamp'] = transform.timestamp
-                transform_dict['clientId'] = transform.clientId
+                # transform_dict = {}
+                msgdict['timestamp'] = transform.timestamp
+                msgdict['clientId'] = transform.clientId
                 transforms = []
                 for i in range(len(transform.transforms)):
                     transforms.append([x for x in transform.transforms[i].data])
-                transform_dict['transforms'] = transforms
-                msgdict['transforms'] = transform_dict 
+                msgdict['transforms'] = transforms
+                # msgdict['transforms'] = transform_dict 
         if topic.startswith("/mp/time/"):
             with messages.Time.from_bytes(entry.data) as time:
                 msgdict['time'] = time.millis 
+
+        if topic.startswith("project_request/"):
+            with messages.ProjectRequest.from_bytes(entry.data) as request:
+                msgdict['requestId'] = request.requestId
+                msgdict['projectorId'] = request.projectorId
+                cameraProjections_dict_ = []
+                for i in range(len(request.cameraProjections)):
+                    current_cameraProjections = request.cameraProjections[i]
+                    cameraProjections_dict = {}
+                    camerainstrinsic_dict = {}
+                    camerainstrinsic_dict['sensorHeight'] = current_cameraProjections.intrinsic.sensorHeight
+                    camerainstrinsic_dict['sensorWidth'] = current_cameraProjections.intrinsic.sensorWidth
+                    camerainstrinsic_dict['pixelSize'] = current_cameraProjections.intrinsic.pixelSize
+                    camerainstrinsic_dict['sourceToDetectorDistance'] = current_cameraProjections.intrinsic.sourceToDetectorDistance
+                    cameraProjections_dict['intrinsic'] = camerainstrinsic_dict
+                    cameraProjections_dict['extrinsic'] = list(request.cameraProjections[i].extrinsic.data)   
+                    cameraProjections_dict_.append(cameraProjections_dict)
+                msgdict['cameraProjections'] = cameraProjections_dict_ 
+                transforms = []
+                for i in range(len(request.volumesWorldFromAnatomical)):
+                    transforms.append([x for x in request.volumesWorldFromAnatomical[i].data])
+                msgdict['volumesWorldFromAnatomical'] = transforms 
+
+        # if topic.startswith("/project_response/"):
+        #     with messages.ProjectResponse.from_bytes(entry.data) as request:
+                # print("2")
+            #     msgdict['requestId'] = request.requestId
+            #     msgdict['projectorId'] = request.projectorId
+            #     print("1")
+                # status_dict = {}
+                # status_dict['code'] = request.status.code
+                # status_dict['message'] = request.status.message
+                # msgdict['status'] = status_dict
+                # img = []
+                # for i in range(len(request.images)):
+                #     img.append([x for x in request.images])
+                # msgdict['images'] = img
+
         if topic.startswith("/mp/setting"):
             with messages.SycnedSetting.from_bytes(entry.data) as setting_data:
                 setting_data_dict = {}
@@ -65,7 +103,7 @@ def convert_pvrlog_to_json(log_folder):
     # print('--------------Unique Topics--------------')
     # for topic in unique_topics:
     #     print(topic)
-    # print('---------------Convert Complete--------------')
+    print('---------------Convert Complete--------------')
 
 if __name__ == '__main__':
     # log_folder = input("Enter the folder path containing .pvrlog files: ")
