@@ -2,13 +2,16 @@ import json
 from pathlib import Path
 import os
 import capnp
+from PIL import Image
+from io import BytesIO
 
 messages = capnp.load("deepdrr_zmq/deepdrrzmq/messages.capnp")
-def extract_topic_data_from_log(log_file):
+def extract_topic_data_from_log(log_file,log_folder_path):
     entries = messages.LogEntry.read_multiple_bytes(log_file.read_bytes())
     topic_data = []
     unique_topics = []
     i = 0
+    image_idx = 0
     for entry in entries:
         topic = entry.topic.decode('utf-8')
         msgdict = {'topic': topic}
@@ -53,21 +56,13 @@ def extract_topic_data_from_log(log_file):
                 for i in range(len(request.volumesWorldFromAnatomical)):
                     transforms.append([x for x in request.volumesWorldFromAnatomical[i].data])
                 msgdict['volumesWorldFromAnatomical'] = transforms 
-
-        # if topic.startswith("/project_response/"):
-        #     with messages.ProjectResponse.from_bytes(entry.data) as request:
-                # print("2")
-            #     msgdict['requestId'] = request.requestId
-            #     msgdict['projectorId'] = request.projectorId
-            #     print("1")
-                # status_dict = {}
-                # status_dict['code'] = request.status.code
-                # status_dict['message'] = request.status.message
-                # msgdict['status'] = status_dict
-                # img = []
-                # for i in range(len(request.images)):
-                #     img.append([x for x in request.images])
-                # msgdict['images'] = img
+        if topic.startswith("/project_response/"):
+        #     decode  the jpeg image from the bytes
+            image = Image.open(BytesIO(entry.data))
+            image_filename = str(image_idx) + ".jpg"
+            image_path = os.path.join(log_folder_path, image_filename)
+            image.save(image_path)
+            image_idx += 1
 
         if topic.startswith("/mp/setting"):
             with messages.SycnedSetting.from_bytes(entry.data) as setting_data:
@@ -95,8 +90,10 @@ def convert_pvrlog_to_json(log_folder):
     log_folder_path = Path(log_folder)
     pvrlog_files = log_folder_path.glob("*.pvrlog")
     for log_file in pvrlog_files:
-        json_file_path = log_folder_path / f"{log_file.stem}.json"
-        topic_data ,unique_topics= extract_topic_data_from_log(log_file)
+        json_file_path = log_folder_path /f"{log_file.stem}.json"
+        img_folder_path = log_folder_path / f"image"
+        os.makedirs(img_folder_path, exist_ok=True)
+        topic_data ,unique_topics= extract_topic_data_from_log(log_file,img_folder_path)
         with open(json_file_path, 'w') as json_file:
             json.dump(topic_data, json_file, indent=4)
         # print(f"Converted {log_file.name} to JSON.")#for debug
