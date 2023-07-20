@@ -194,7 +194,8 @@ struct SycnedSetting {
         long @6 :Int64;
         string @7 :Text;
         arm @8 :CArmSettings;
-        uiControl @9 :UIControlSetting;#Need add
+        uiControl @9 :UIControlSetting;
+        userStudy @10 :UserStudySetting;
     }
 }
 
@@ -223,6 +224,13 @@ struct UIControlSetting  {
     webcorridorselection @5 :Int32 ;#the index of web selection
     flippatient @6 :Bool; # Flip patient bool
     viewIndicatorselfselect @7 :Bool; # View indicator self select bool
+}
+#07/20 -new user study
+struct UserStudySetting  {
+    patientskinopaque @0 :Bool; 
+    userstudymode @1 :Bool; 
+    kwireerrorshow @2 :Bool;
+    corridortransformation @3 :Matrix4x4;
 }
 
 struct LogFile {
