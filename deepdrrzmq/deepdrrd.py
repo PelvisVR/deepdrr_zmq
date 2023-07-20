@@ -215,10 +215,12 @@ class DeepDRRServer:
                     try:
                         await self.handle_projector_params_response(latest_msgs[b"projector_params_response/"])
                     except Exception as e:
-                        raise DeepDRRServerException(1, f"error creating projector: \n{e}")
+                        raise DeepDRRServerException(1, f"error creating projector", e)
 
             except DeepDRRServerException as e:
                 print(f"server exception: {e}")
+                if e.subexception is not None:
+                    logging.exception(e.subexception)
                 await pub_socket.send_multipart([b"/server_exception/", e.status_response().to_bytes()])
 
 

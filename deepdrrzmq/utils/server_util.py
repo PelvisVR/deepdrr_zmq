@@ -53,13 +53,14 @@ class DeepDRRServerException(Exception):
     """
     Exception class for server errors.
     """
-    def __init__(self, code, message):
+    def __init__(self, code, message, subexception=None):
         """
         :param code: The status code.
         :param message: The status message.
         """
         self.code = code
         self.message = message
+        self.subexception = subexception
 
     def __str__(self):
         return f"DeepDRRServerError({self.code}, {self.message})"

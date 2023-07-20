@@ -5,10 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Module",
+            "name": "manager",
             "type": "python",
             "request": "launch",
             "module": "deepdrrzmq.manager",
+            "justMyCode": false
+        },
+        {
+            "name": "deepdrrd",
+            "type": "python",
+            "request": "launch",
+            "module": "deepdrrzmq.deepdrrd",
             "justMyCode": false
         },
         {
