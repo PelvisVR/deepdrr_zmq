@@ -197,6 +197,7 @@ struct SycnedSetting {
         uiControl @9 :UIControlSetting;
         userStudy @10 :UserStudySetting;
         singleshotcount @11 :SingleShotCount;
+        testrecorddata @12 :TestRecordData;
     }
 }
 
@@ -238,6 +239,13 @@ struct SingleShotCount  {
     singleshotcount @0 :Int32; 
 }
 
+
+
+struct TestRecordData  {
+    xraycount @0 :Int32; 
+    totaltime @1 :Float64;
+    totaltestcount @2 :Int32;
+}
 struct LogFile {
     id @0 :Text; # Id of the log file
     mtime @1 :Float64; # Last modified time of the log file
