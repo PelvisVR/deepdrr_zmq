@@ -196,6 +196,7 @@ struct SycnedSetting {
         arm @8 :CArmSettings;
         uiControl @9 :UIControlSetting;
         userStudy @10 :UserStudySetting;
+        singleshotcount @11 :SingleShotCount;
     }
 }
 
@@ -231,6 +232,10 @@ struct UserStudySetting  {
     userstudymode @1 :Bool; 
     kwireerrorshow @2 :Bool;
     corridortransformation @3 :Matrix4x4;
+    testkwiretransformation @4 :Matrix4x4;
+}
+struct SingleShotCount  {
+    singleshotcount @0 :Int32; 
 }
 
 struct LogFile {
