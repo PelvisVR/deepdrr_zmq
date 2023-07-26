@@ -87,9 +87,9 @@ def extract_topic_data_from_log(log_file,log_folder_path):
                     setting_data_dict['totaltime'] = setting.totaltime
                     setting_data_dict['totaltestcount'] = setting.totaltestcount
                     msgdict['testrecorddata'] = setting_data_dict   
-                    
+                    topic_data.append(msgdict)
                              
-        topic_data.append(msgdict)
+        # topic_data.append(msgdict)
     return topic_data, unique_topics
 def convert_pvrlog_to_json(log_folder):
     log_folder_path = Path(log_folder)
@@ -109,5 +109,5 @@ def convert_pvrlog_to_json(log_folder):
 
 if __name__ == '__main__':
     # log_folder = input("Enter the folder path containing .pvrlog files: ")
-    log_folder = "C:/vrplog/zggdi8m5m8aql2bn--2023-06-24-23-39-57"
+    log_folder = "C:/vrplog/c572ngqtzvjx8jza--2023-07-26-21-14-20"
     convert_pvrlog_to_json(log_folder)
