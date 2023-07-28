@@ -198,6 +198,7 @@ struct SycnedSetting {
         userStudy @10 :UserStudySetting;
         singleshotcount @11 :SingleShotCount;
         testrecorddata @12 :TestRecordData;
+        skinandtransport @13 :SkinAndTrasnportSetting;
     }
 }
 
@@ -237,6 +238,10 @@ struct UserStudySetting  {
 }
 struct SingleShotCount  {
     singleshotcount @0 :Int32; 
+}
+struct SkinAndTrasnportSetting  {
+    skinopaqueweb @0 :Bool; 
+    userpos @1 :Matrix4x4;
 }
 
 
