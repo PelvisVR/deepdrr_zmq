@@ -12,6 +12,7 @@ def extract_topic_data_from_log(log_file,log_folder_path):
     unique_topics = []
     i = 0
     image_idx = 0
+    startcount = True
     for entry in entries:
         topic = entry.topic.decode('utf-8')
         msgdict = {'topic': topic}
@@ -54,13 +55,18 @@ def extract_topic_data_from_log(log_file,log_folder_path):
         #         for i in range(len(request.volumesWorldFromAnatomical)):
         #             transforms.append([x for x in request.volumesWorldFromAnatomical[i].data])
         #         msgdict['volumesWorldFromAnatomical'] = transforms 
-        # if topic.startswith("/project_response/"):
-        # #     decode  the jpeg image from the bytes
-        #     image = Image.open(BytesIO(entry.data))
-        #     image_filename = str(image_idx) + ".jpg"
-        #     image_path = os.path.join(log_folder_path, image_filename)
-        #     image.save(image_path)
-        #     image_idx += 1
+
+        if topic.startswith("/project_response/"):
+        #     decode  the jpeg image from the bytes
+            if startcount:
+                try:
+                    image = Image.open(BytesIO(entry.data))
+                    image_filename = str(image_idx) + ".jpg"
+                    image_path = os.path.join(log_folder_path, image_filename)
+                    image.save(image_path)
+                except:
+                    pass
+                image_idx += 1
         if topic.startswith("/mp/setting"):
             with messages.SycnedSetting.from_bytes(entry.data) as setting_data:
                 setting_data_dict = {}
@@ -78,19 +84,22 @@ def extract_topic_data_from_log(log_file,log_folder_path):
                 #     setting_data_dict['flippatient'] = setting.flippatient
                 #     setting_data_dict['viewIndicatorselfselect'] = setting.viewIndicatorselfselect
                 #     msgdict['uiControl'] = setting_data_dict   
-                # if which == 'arm':     
-                #     setting = setting_data.setting.arm.liveCapture  
-                #     msgdict['liveCapture'] = setting 
-                if which == 'testrecorddata':
-                    setting = setting_data.setting.testrecorddata
-                    setting_data_dict['xraycount'] = setting.xraycount
-                    setting_data_dict['totaltime'] = setting.totaltime
-                    setting_data_dict['totaltestcount'] = setting.totaltestcount
-                    msgdict['testrecorddata'] = setting_data_dict   
-                    topic_data.append(msgdict)
+                if which == 'arm':     
+                    setting = setting_data.setting.arm.liveCapture  
+                    msgdict['liveCapture'] = setting 
+                    if setting:
+                        startcount = True
+                        topic_data.append(msgdict)
+                # if which == 'testrecorddata':
+                #     setting = setting_data.setting.testrecorddata
+                #     setting_data_dict['xraycount'] = setting.xraycount
+                #     setting_data_dict['totaltime'] = setting.totaltime
+                #     setting_data_dict['totaltestcount'] = setting.totaltestcount
+                #     msgdict['testrecorddata'] = setting_data_dict   
+                #     topic_data.append(msgdict)
                              
         # topic_data.append(msgdict)
-    return topic_data, unique_topics
+    return topic_data, unique_topics, image_idx
 def convert_pvrlog_to_json(log_folder):
     log_folder_path = Path(log_folder)
     pvrlog_files = log_folder_path.glob("*.pvrlog")
@@ -98,16 +107,22 @@ def convert_pvrlog_to_json(log_folder):
         json_file_path = log_folder_path /f"{log_file.stem}.json"
         img_folder_path = log_folder_path / f"image"
         os.makedirs(img_folder_path, exist_ok=True)
-        topic_data ,unique_topics= extract_topic_data_from_log(log_file,img_folder_path)
+        topic_data ,unique_topics,image_idx= extract_topic_data_from_log(log_file,img_folder_path)
         with open(json_file_path, 'w') as json_file:
             json.dump(topic_data, json_file, indent=4)
         # print(f"Converted {log_file.name} to JSON.")#for debug
     # print('--------------Unique Topics--------------')
     # for topic in unique_topics:
     #     print(topic)
-    print('---------------Convert Complete--------------')
+    # print('---------------Image Count--------------')
+    print(log_folder + ":"+ str(image_idx))
 
 if __name__ == '__main__':
     # log_folder = input("Enter the folder path containing .pvrlog files: ")
-    log_folder = "C:/vrplog/c572ngqtzvjx8jza--2023-07-26-21-14-20"
-    convert_pvrlog_to_json(log_folder)
+    # log_folder = "C:/vrplog/c572ngqtzvjx8jza--2023-07-26-21-14-20"
+    # log_folder = "C:/Users/hzhan/OneDrive - Johns Hopkins/Dataset/X_ray_shot_count/19"
+    # convert_pvrlog_to_json(log_folder)
+    for i in range(6,24):
+        log_folder = "C:/Users/hzhan/OneDrive - Johns Hopkins/Dataset/X_ray_shot_count/"+str(i)
+        convert_pvrlog_to_json(log_folder)
+    
