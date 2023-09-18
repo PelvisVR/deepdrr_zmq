@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # log_folder = "C:/vrplog/c572ngqtzvjx8jza--2023-07-26-21-14-20"
     # log_folder = "C:/Users/hzhan/OneDrive - Johns Hopkins/Dataset/X_ray_shot_count/19"
     # convert_pvrlog_to_json(log_folder)
-    for i in range(6,24):
+    for i in range(24,36):
         log_folder = "C:/Users/hzhan/OneDrive - Johns Hopkins/Dataset/X_ray_shot_count/"+str(i)
         convert_pvrlog_to_json(log_folder)
     
